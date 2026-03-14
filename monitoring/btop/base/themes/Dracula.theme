@@ -1,0 +1,94 @@
+# btop Dracula Theme
+# https://draculatheme.com/
+# Adapted for btop++ v1.2.13+
+
+# Main background, foreground
+theme[main_bg]="#282a36"
+theme[main_fg]="#f8f8f2"
+
+# Title background, foreground
+theme[title_bg]="#44475a"
+theme[title_fg]="#f8f8f2"
+
+# Highlighted element foreground/background
+theme[hi_fg]="#bd93f9"
+theme[hi_bg]="#44475a"
+theme[selected_bg]="#44475a"
+theme[selected_fg]="#f8f8f2"
+
+# Text foreground/background
+theme[txt_fg]="#f8f8f2"
+theme[txt_bg]="#282a36"
+theme[txt_help_fg]="#6272a4"
+theme[txt_help_bg]="#282a36"
+
+# Box title background/foreground
+theme[box_title_bg]="#282a36"
+theme[box_title_fg]="#f8f8f2"
+
+# Background/foreground for CPU, Mem, Net meters
+theme[cpu_fg]="#8be9fd"
+theme[cpu_bg]="#282a36"
+theme[mem_fg]="#bd93f9"
+theme[mem_bg]="#282a36"
+theme[net_fg]="#50fa7b"
+theme[net_bg]="#282a36"
+
+# Battery meter colors
+theme[batt_fg]="#50fa7b"
+theme[batt_bg]="#282a36"
+
+# Process colors
+theme[proc_fg]="#f8f8f2"
+theme[proc_bg]="#282a36"
+
+# Progress bar colors
+theme[progress_fg]="#8be9fd"
+theme[progress_bg]="#44475a"
+
+# Graph colors
+theme[graph_fg]="#8be9fd"
+theme[graph_bg]="#44475a"
+
+# Meter colors
+theme[meter_fg]="#8be9fd"
+theme[meter_bg]="#44475a"
+
+# Misc colors
+theme[disabled_fg]="#6272a4"
+theme[divider_fg]="#44475a"
+
+# Temperature colors
+theme[temp_fg]="#ff79c6"
+theme[temp_bg]="#282a36"
+theme[temp_crit_fg]="#ff5555"
+theme[temp_crit_bg]="#ff5555"
+
+# CPU core colors (colors for each core in a multi-core system)
+theme[cpu_core1_fg]="#8be9fd"
+theme[cpu_core2_fg]="#50fa7b"
+theme[cpu_core3_fg]="#ffb86c"
+theme[cpu_core4_fg]="#ff79c6"
+theme[cpu_core5_fg]="#bd93f9"
+theme[cpu_core6_fg]="#ff5555"
+theme[cpu_core7_fg]="#f1fa8c"
+theme[cpu_core8_fg]="#6272a4"
+
+# Memory meter colors
+theme[mem_used_fg]="#bd93f9"
+theme[mem_free_fg]="#50fa7b"
+theme[mem_cache_fg]="#8be9fd"
+theme[mem_buff_fg]="#ffb86c"
+
+# Network meter colors
+theme[net_download_fg]="#50fa7b"
+theme[net_upload_fg]="#ff79c6"
+
+# Progress bar gradient colors
+theme[proc_start]="#8be9fd"
+theme[proc_end]="#bd93f9"
+
+# Misc
+theme[good]="#50fa7b"
+theme[warning]="#f1fa8c"
+theme[critical]="#ff5555"

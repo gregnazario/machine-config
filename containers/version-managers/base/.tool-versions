@@ -1,0 +1,291 @@
+# ASDF Version Manager Configuration
+# Base configuration for all operating systems
+# Place in project root as .tool-versions
+
+# === Language Versions ===
+# Format: <plugin> <version> [additional_reference]
+# Example: python 3.11.7
+
+# === Core Languages ===
+# Pin specific versions for this project
+
+# Python (via python plugin)
+python 3.11.7
+
+# Node.js (via nodejs plugin)
+nodejs 20.11.0
+
+# Rust (via rust plugin)
+rust 1.75.0
+
+# Go (via golang plugin)
+golang 1.21.6
+
+# Java (via java plugin)
+java openjdk-21
+
+# Ruby (via ruby plugin)
+ruby 3.3.0
+
+# PHP (via php plugin)
+php 8.3
+
+# === Additional Languages ===
+
+# Elixir (via erlang plugin + elixir plugin)
+# erlang 26.2.1
+# elixir 1.15.7
+
+# Clojure (via leiningen plugin or clojure plugin)
+# clojure 1.11.1.1413
+
+# Haskell (via haskell plugin)
+# haskell 9.6.3
+
+# Lua (via lua plugin)
+# lua 5.4.6
+# luajit 2.1.1716465797
+
+# .NET (via dotnet-core plugin)
+# dotnet-core 8.0.101
+
+# === Runtime Tools ===
+
+# Bun (JavaScript runtime)
+bun 1.0.25
+
+# Deno (TypeScript runtime)
+deno 1.40.0
+
+# Yarn (package manager for Node.js)
+# yarn 1.22.21
+
+# pnpm (package manager for Node.js)
+# pnpm 8.14.1
+
+# === Development Tools ===
+
+# Poetry (Python dependency management)
+# poetry 1.7.1
+
+# Pipenv (Python development workflow)
+# pipenv 2023.12.1
+
+# Node.js package managers (use bun as primary)
+# yarn 1.22.21
+# pnpm 8.14.1
+
+# Terraform (Infrastructure as Code)
+# terraform 1.6.6
+
+# Packer (HashiCorp Packer)
+# packer 1.9.4
+
+# Vault (HashiCorp Vault)
+# vault 1.15.2
+
+# Consul (HashiCorp Consul)
+# consul 1.16.0
+
+# === CI/CD Tools ===
+
+# GitHub CLI (gh)
+# gh 2.41.0
+
+# AWS CLI
+# awscli 2.15.0
+
+# kubectl (Kubernetes CLI)
+# kubectl 1.29.0
+
+# helm (Kubernetes package manager)
+# helm 3.13.3
+
+# terraform-docs (Terraform documentation generator)
+# terraform-docs 0.16.0
+
+# === Shell Tools ===
+
+# starship (cross-shell prompt)
+starship 1.16.0
+
+# zoxide (smart cd)
+zoxide 1.9.1
+
+# bat (cat clone)
+bat 0.24.0
+
+# exa (ls replacement)
+# eza (exa fork, actively maintained)
+eza 0.18.0
+
+# fd (find replacement)
+fd 9.0.0
+
+# ripgrep (grep replacement)
+ripgrep 14.0.3
+
+# fzf (fuzzy finder)
+fzf 0.47.0
+
+# jq (JSON processor)
+jq 1.7
+
+# yq (YAML processor)
+yq 4.40.5
+
+# === Project-Specific Versions ===
+# These can be overridden per-project
+
+# For most projects, use system-default versions:
+# python latest
+# nodejs lts
+
+# For projects requiring specific versions:
+# python 3.11.7
+# nodejs 20.11.0
+
+# === ASDF Configuration ===
+# ~/.asdfrc
+
+# [defaults]
+# # Plugin repository
+# plugin_repository_url = https://github.com/asdf-vm/asdf-plugins.git
+
+# # Load plugins installed in home directory
+# # (as opposed to system-wide)
+# use_release_candidates = false
+
+# # Legacy version files support
+# # (e.g., .nvmrc, .node-version)
+# legacy_version_file = yes
+
+# # Plugins to not load
+# # (useful if you have many plugins)
+# # excluded_plugins = []
+
+# # Disable short hand for plugin version
+# # (e.g., asdf install python latest)
+# # allow_plugin_shortname = true
+
+# # Verify checksums when downloading
+# # verify_checksums = true
+
+# # Use GPG verification
+# # use_gpg_verification = true
+
+# === ASDF Common shims ===
+# When using asdf, shims are created in ~/.asdf/shims/
+# These shim scripts redirect to the appropriate tool version
+
+# To see all installed tools:
+# asdf list
+
+# To see all installed versions of a tool:
+# asdf list python
+
+# To set global (default) version:
+# asdf global python 3.11.7
+
+# To set local (project) version:
+# asdf local python 3.11.7
+
+# To install a new version:
+# asdf install python 3.11.7
+
+# To install all tools defined in .tool-versions:
+# asdf install
+
+# === ASDF Plugins ===
+# List all installed plugins:
+# asdf plugin list
+
+# Add a new plugin:
+# asdf plugin add python
+# asdf plugin add nodejs
+# asdf plugin add rust
+
+# Update all plugins:
+# asdf plugin-update --all
+
+# === Example .tool-versions for Different Projects ===
+
+# Backend API project:
+# python 3.11.7
+# nodejs 20.11.0  # For Node-based tools
+# golang 1.21.6
+# terraform 1.6.6
+
+# Frontend project:
+# nodejs 20.11.0
+# bun 1.0.25
+
+# Data science project:
+# python 3.11.7
+# julia 1.10.0
+# r 4.3.2
+
+# DevOps project:
+# terraform 1.6.6
+# packer 1.9.4
+# vault 1.15.2
+# kubectl 1.29.0
+# awscli 2.15.0
+
+# === Bun as Primary Runtime ===
+# Configuration for Bun-first Node.js projects
+
+# For Bun projects, use this .tool-versions:
+# nodejs 18.18.0  # Bun 1.x requires Node 18+
+# bun 1.0.25
+
+# Then use bun instead of npm/yarn/pnpm:
+# bun install
+# bun run build
+# bun test
+
+# Bun can also install Node.js packages directly:
+# bun add <package>
+# bun remove <package>
+
+# === Version Aliases ===
+# ASDF supports version aliases in .tool-versions
+
+# Use 'latest' to always use the latest version:
+# python latest
+
+# Use 'lts' for Node.js LTS:
+# nodejs lts
+
+# Or pin to specific LTS version:
+# nodejs lts-iron
+
+# Use ':path' for local version:
+# python system:/usr/bin/python3.11
+
+# === Shell Integration ===
+# Add to your shell config (.zshrc, .bashrc, config.fish):
+
+# For Bash:
+# . "$HOME/.asdf/asdf.sh"
+# . "$HOME/.asdf/completions/asdf.bash"
+
+# For Zsh:
+# . "$HOME/.asdf/asdf.sh"
+# fpath=(${ASDF_DIR}/completions $fpath)
+# autoload -Uz compinit && compinit
+
+# For Fish:
+# source "$HOME/.asdf/asdf.fish"
+# mkdir -p ~/.config/fish/completions
+# and ln -s ~/.asdf/completions/asdf.fish ~/.config/fish/completions/asdf.fish
+
+# === Notes ===
+# 1. The .tool-versions file should be committed to version control
+# 2. Use specific versions for reproducibility
+# 3. Use 'latest' only for development/experimental projects
+# 4. Pin major versions (e.g., 3.11) for better compatibility
+# 5. ASDF reads .tool-versions from current directory and parent directories
+# 6. Global default can be set in ~/.tool-versions
+# 7. Project-specific .tool-versions override global versions
+# 8. Use 'asdf reshim python' after installing packages globally

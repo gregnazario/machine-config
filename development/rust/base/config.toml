@@ -1,0 +1,281 @@
+# Rust Development Configuration
+# Base configuration for all operating systems
+
+# === Cargo.toml ===
+# This is a sample Cargo.toml for Rust projects
+# Place in project root
+
+[package]
+name = "my-rust-project"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@example.com>"]
+license = "MIT OR Apache-2.0"
+description = "My Rust project"
+repository = "https://github.com/yourusername/my-rust-project"
+readme = "README.md"
+keywords = ["rust", "cli"]
+categories = ["command-line-utilities"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Add your dependencies here
+# tokio = { version = "1.35", features = ["full"] }
+# serde = { version = "1.0", features = ["derive"] }
+# anyhow = "1.0"
+# tracing = "0.1"
+# tracing-subscriber = "0.3"
+
+[dev-dependencies]
+# Development dependencies
+# criterion = "0.5"  # Benchmarking
+# proptest = "1.0"   # Property testing
+# rstest = "0.18"    # Parameterized testing
+
+[profile.release]
+# Optimize for binary size
+strip = true  # Remove debug symbols
+lto = true    # Link-time optimization
+codegen-units = 1  # Better optimization, slower compile
+opt-level = "z"   # Optimize for size
+# panic = "abort"  # Reduce binary size
+
+[profile.dev]
+# Faster compile times for development
+opt-level = 0
+
+[profile.test]
+# Optimize tests
+opt-level = 1
+
+# === Cargo Config (~/.cargo/config.toml) ===
+
+# Build settings
+[build]
+# Target directory for compiled artifacts
+# target-dir = "target"
+
+# Use more parallel jobs for building
+jobs = 4  # Set to number of CPU cores
+
+# === Network Settings ===
+
+[http]
+# Check for newer versions on crates.io
+check-revisions = true
+
+# Proxy settings (if needed)
+# proxy = "127.0.0.1:8080"
+
+# timeout for HTTP requests
+timeout = 30
+
+# === Source Replacement ===
+
+# Use faster mirror for crates.io (optional)
+# [source.crates-io]
+# replace-with = 'tuna'
+#
+# [source.tuna]
+# registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+
+# === Registry Settings ===
+
+[registries.crates-io]
+protocol = "sparse"
+index = "https://github.com/rust-lang/crates.io-index"
+
+# Alias registry
+# [registries.my-registry]
+# index = "https://github.com/my-registry/crates.io-index"
+
+# === Cargo Aliases ===
+# Create shortcuts for common Cargo commands
+
+[alias]
+# Build aliases
+b = "build"
+br = "build --release"
+check-all = "check --all-targets --all-features"
+check-doc = "test --doc"
+
+# Test aliases
+t = "test"
+tt = "test --release"
+tw = "test --workspace"
+ta = "test --all-features"
+
+# Clippy aliases
+clippy-all = "clippy --all-targets --all-features"
+clippy-doc = "clippy --doc"
+
+# Doc aliases
+d = "doc"
+do = "doc --open"
+da = "doc --all-features"
+
+# Update aliases
+up = "update"
+ua = "update --aggressive"
+
+# Clean aliases
+clean-all = "clean --doc --release --target"
+
+# Benchmark aliases
+bench-criterion = "bench --bench criterion"
+
+# === rust-analyzer Configuration ===
+# For VS Code/Vim with rust-analyzer LSP
+
+# .vscode/settings.json or initialize_options in editor:
+# {
+#   "rust-analyzer.cargo.features": "all",
+#   "rust-analyzer.checkOnSave.command": "clippy",
+#   "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+#   "rust-analyzer.procMacro.enable": true,
+#   "rust-analyzer.inlayHints.enable": true,
+#   "rust-analyzer.inlayHints.typeHints.enable": true,
+#   "rust-analyzer.inlayHints.parameterHints.enable": true,
+#   "rust-analyzer.inlayHints.chainingHints.enable": true,
+# }
+
+# === rustfmt Configuration ===
+# Create: rustfmt.toml in project root
+
+# Edition to use
+edition = "2021"
+
+# Maximum line width
+max_width = 100
+
+# Hard tabs or spaces
+hard_tabs = false
+tab_spaces = 4
+
+# newline style
+newline_style = "Unix"
+
+# Use field init shorthand if possible
+use_field_init_shorthand = true
+
+# Use try shorthand
+use_try_shorthand = true
+
+# Force explicit types for public items
+# avoid_breaking_public_api = true (deprecated)
+
+# Wrap comments at max_width
+wrap_comments = true
+comment_width = 100
+
+# Format code in doc comments
+format_code_in_doc_comments = true
+
+# Format strings
+format_strings = true
+
+# Normalize comments
+normalize_comments = true
+
+# Normalize doc attributes
+normalize_doc_attributes = true
+
+# License template
+license_template_path = ""
+
+# Reorder imports
+reorder_imports = true
+reorder_modules = true
+
+# Report fixme
+report_fixme = "Always"
+report_todo = "Always"
+
+# Unstable features
+unstable_features = true
+
+# Skip children
+# skip_children = false
+
+# === Clippy Configuration ===
+# Create: clippy.toml in project root
+
+# Cognitive complexity threshold
+cognitive-complexity-threshold = 30
+
+# Disallowed methods
+# disallowed-methods = ["std::iter::Peekable::peek"]
+
+# Documentation
+# doc-valid-idents = ["SQLite", "GitHub", "IPv4", "Linux", "macOS"]
+
+# Blacklisted names
+# blacklisted-names = ["foo", "bar", "baz", "qux"]
+
+# Too many arguments threshold
+too-many-arguments-threshold = 7
+
+# Type complexity threshold
+type-complexity-threshold = 250
+
+# Single char binding names threshold
+# single-char-binding-names-threshold = 4
+
+# Literal representation threshold
+# literal-representation-threshold = 1
+
+# === Rust Toolchain ===
+# ~/.rustup/settings.toml
+
+[default]
+# Default toolchain
+# toolchain = "stable"
+
+# Auto-install missing components
+auto_install = true
+
+# Display install date in output
+version_check = true
+
+# === Additional Tools ===
+
+# Install additional components:
+# rustup component add rustfmt clippy rust-analyzer rust-src
+
+# Useful Cargo binaries:
+# - cargo-edit (cargo add, rm, upgrade)
+# - cargo-watch (watch for changes and recompile)
+# - cargo-nextest (faster test runner)
+# - cargo-audit (security audits)
+# - cargo-outdated (check for outdated deps)
+# - cargo-expand (expand macros)
+# - cargo-tree (display dependency tree)
+# - cargo-binstall (install binaries faster)
+
+# Install with:
+# cargo install cargo-edit cargo-watch cargo-nextest cargo-audit
+# cargo install cargo-outdated cargo-expand cargo-tree cargo-binstall
+
+# === .cargo/config.toml Full Example ===
+
+# [build]
+# target = "x86_64-unknown-linux-gnu"
+# target-dir = "target"
+#
+# [target.x86_64-unknown-linux-gnu]
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+#
+# [env]
+# CC = "clang"
+# CXX = "clang++"
+#
+# [net]
+# git-fetch-with-cli = true
+#
+# [source.crates-io]
+# replace-with = "vendored-sources"
+#
+# [source.vendored-sources]
+# directory = "/path/to/vendor"

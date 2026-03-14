@@ -1,0 +1,439 @@
+# Lazygit Configuration
+# Base configuration for all operating systems
+# https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+
+# === GUI Settings ===
+gui:
+  # Theme: catppuccin-mocha (dark theme)
+  # Alternatives: catppuccin-latte, default, dracula, nord, solarized
+  theme:
+    activeBorderColor:
+      - "#89b4fa"  # Blue
+      - "bold"
+    inactiveBorderColor:
+      - "#a6adc8"  # Muted blue
+    optionsTextColor:
+      - "#cdd6f4"  # White
+    selectedLineBgColor:
+      - "#313244"  # Surface 0
+    selectedRangeBgColor:
+      - "#45475a"  # Surface 1
+    cherryPickedCommitBgColor:
+      - "#a6e3a1"  # Green
+    cherryPickedCommitFgColor:
+      - "#1e1e2e"  # Base
+    unstagedChangesColor:
+      - "#f38ba8"  # Red
+    defaultFgColor:
+      - "#cdd6f4"  # White
+    searchingActiveBorderColor:
+      - "#f9e2af"  # Yellow
+
+  # Window size
+  windowSize: half  # full, half
+  scrollHeight: 2   # Number of lines to scroll
+  scrollPastBottom: true
+  scrollPastEnd: false
+
+  # Filter mode
+  filterMode: fuzzy  # fuzzy, contains, regex
+
+  # Language settings
+  # en (English), zh (Chinese), pl (Polish), nl (Dutch), etc.
+  # See lazygit --help for full list
+  # language: en
+
+  # Nerd fonts version (v2 or v3)
+  nerdFontsVersion: "3"
+
+  # Show file icons
+  showFileIcons: true
+
+  # Show branch icons
+  showBranchCommitHash: true
+
+  # Show command log
+  showCommandLog: true
+
+  # Show bottom line
+  showBottomLine: true
+
+  # Show list footer
+  showListFooter: true
+
+  # Show random tip on startup
+  showRandomTip: true
+
+  # Show icons in the title bar
+  showIcons: true
+
+# === Git Settings ===
+git:
+  # Merge patterns
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+
+  # Commit settings
+  commit:
+    signOff: false
+
+  # Parse commits
+  parseEmoji: true
+
+  # Override GPG config
+  overrideGpg: true
+  # disableGPG: true  # Disable GPG signing entirely
+
+  # Log settings
+  log:
+    # Show whole graph
+    showGraph: "always"
+    # Show commit hashes
+    showWholeCommitGraph: true
+
+  # Main branch(es)
+  mainBranches:
+    - master
+    - main
+    - develop
+    - development
+
+# === Update Settings ===
+update:
+  # Check for updates
+  method: prompt  # prompt, background, never
+  days: 14  # Check interval in days
+
+# === Refresher Settings ===
+# How often to refresh data
+refresher:
+  refreshInterval: 10  # in seconds
+  fetchInterval: 60   # in seconds
+
+# === Keybindings ===
+# Custom keybindings
+keybinding:
+  universal:
+    # Quit
+    quit: "q"
+
+    # Return to previous panel
+    return: "<esc>"
+
+    # Quit without returning
+    quitWithoutChangingDirectory: "Q"
+
+    # Toggle panel
+    togglePanel: "<tab>"
+
+    # Next/previous tab
+    nextTab: "]"
+    prevTab: "["
+
+    # Next/previous screen mode
+    nextScreenMode: "+"
+    prevScreenMode: "_"
+
+    # Scroll
+    scrollUp: "<up>"
+    scrollDown: "<down>"
+    scrollUpMain: "K"
+    scrollDownMain: "J"
+    scrollUpAlt: "W"
+    scrollDownAlt: "S"
+
+    # Scroll to top/bottom
+    scrollTop: "g"
+    scrollBottom: "G"
+
+    # Scroll left/right
+    scrollLeft: "H"
+    scrollRight: "L"
+
+    # Filter files
+    startFilter: "/"
+    # Confirm in filter mode
+    confirmInFilter: "<enter>"
+    # Cancel filter mode
+    cancelFilter: "<esc>"
+
+    # Next/previous match
+    nextMatch: "n"
+    prevMatch: "N"
+
+    # Options menu
+    options: "x"
+
+    # Open file
+    openFile: "o"
+    openFileInEditor: "<c-o>"
+
+    # Scroll in sub-panel
+    scrollUpSubpanel: "<left>"
+    scrollDownSubpanel: "<right>"
+
+    # Open merge tool
+    openMergeTool: "M"
+
+    # Copy to clipboard
+    copyToClipboard: "<c-c>"
+
+    # Copy selected to clipboard
+    copySelectedToClipboard: "<c-o>"
+
+    # Paste from clipboard
+    pasteFromClipboard: "<c-v>"
+
+    # Create patch
+    createPatch: "<c-p>"
+
+    # Create reset patch
+    createResetPatch: "<c-r>"
+
+    # Next/previous screen
+    nextScreen: "<right>"
+    prevScreen: "<left>"
+
+    # Toggle whitespace in diff view
+    toggleWhitespaceInDiffView: "<c-w>"
+
+    # Increase/decrease context in diff view
+    increaseContextInDiffView: "}"
+    decreaseContextInDiffView: "{"
+
+    # Open commit browser
+    openCommitBrowser: "<c-b>"
+
+    # Open diff browser
+    openDiffBrowser: "<enter>"
+
+    # Submit editor text
+    submitEditorText: "<enter>"
+
+    # Append to editor
+    appendLineToEditor: "<a-enter>"
+
+  # Status panel keybindings
+  status:
+    # Check out file
+    checkForUpdate: "u"
+    # Recent commits
+    recentCommits: "c"
+
+  # Files panel keybindings
+  files:
+    # Commit changes
+    commitChanges: "c"
+    # Commit changes with editor
+    commitChangesWithoutHook: "w"
+    # Amend last commit
+    amendLastCommit: "A"
+    # Commit changes with amendment
+    commitChangesWithAmend: "W"
+    # Confirm quit during merge conflicts
+    confirmQuitMerge: "x"
+    # Ignore file
+    ignoreFile: "i"
+    # Refresh files
+    refreshFiles: "r"
+    # Stash all changes
+    stashAllChanges: "s"
+    # View stash options
+    viewStashOptions: "S"
+    # Toggle staged
+    toggleStaged: "t"
+    # Toggle all staged
+    toggleTreeView: "a"
+    # View reset options
+    viewResetOptions: "U"
+    # Open merge tool
+    openMergeTool: "M"
+    # Open file
+    openFile: "o"
+
+  # Branches panel keybindings
+  branches:
+    # Checkout branch
+    checkout: "c"
+    # New branch
+    createPullRequest: "o"
+    # View pull request
+    viewPullRequestOptions: "O"
+    # Copy branch name
+    copyBranchNameToClipboard: "C"
+    # Delete branch
+    delete: "d"
+    # Rebase branch
+    rebase: "r"
+    # Merge branch
+    merge: "m"
+    # Fast-forward branch
+    fastForward: "f"
+    # Create tag
+    createTag: "T"
+    # Push tag
+    pushTag: "P"
+    # Rename branch
+    rename: "R"
+    # Set upstream
+    setUpstream: "u"
+    # View upstream
+    viewUpstream: "U"
+
+  # Commits panel keybindings
+  commits:
+    # Squash down
+    squashDown: "s"
+    # Rename commit
+    rename: "r"
+    # Rename commit with editor
+    renameWithEditor: "R"
+    # View reset options
+    viewResetOptions: "U"
+    # Mark commit as squash
+    markCommitAsSquash: "s"
+    # Create fixup commit
+    createFixupCommit: "f"
+    # Create fixup commit for all commits
+    createFixupCommitForAllCommits: "F"
+    # Squash commits above
+    squashAboveCommits: "S"
+    # Move commit down
+    moveDownCommit: "J"
+    # Move commit up
+    moveUpCommit: "K"
+    # Copy commit attribute
+    copyCommitAttributeToClipboard: "c"
+    # Copy commit description
+    copyCommitDescriptionToClipboard: "C"
+    # Copy commit sha
+    copyCommitShaToClipboard: "y"
+    # Copy commit author
+    copyCommitAuthorToClipboard: "Y"
+    # Copy commit patch
+    copyCommitPatchToClipboard: "<c-y>"
+    # Cherry pick
+    cherryPickCopy: "c"
+    # Cherry pick range
+    cherryPickCopyRange: "C"
+    # Paste commit range
+    pasteCommitRange: "V"
+    # Tag commit
+    tagCommit: "T"
+    # Checkout commit
+    checkout: "c"
+    # Reset to this commit
+    resetToThisCommit: "r"
+    # View commit files
+    viewCommitFiles: "f"
+    # View commit options
+    viewCommitFilesOptions: "F"
+    # Edit commit file
+    editCommitFile: "e"
+
+  # Stash panel keybindings
+  stash:
+    # Pop stash
+    popStash: "g"
+    # Drop stash
+    dropStash: "d"
+    # Apply stash
+    applyStash: "a"
+    # Rename stash
+    renameStash: "r"
+
+  # Commit description panel keybindings
+  commitDescription:
+    # Commit
+    commit: "<enter>"
+    # Cancel
+    cancel: "<esc>"
+    # New line
+    newLine: "<a-enter>"
+
+  # Sub-commits panel keybindings
+  subCommits:
+    # Squash down
+    squashDown: "s"
+    # Rename commit
+    rename: "r"
+    # Rename commit with editor
+    renameWithEditor: "R"
+
+  # Custom commands
+customCommands:
+  - name: GitHub Open PR
+    key: "O"
+    context: "files"
+    description: Open PR on GitHub
+    prompts:
+      - type: "menu"
+        title: "Which action?"
+        key: "Action"
+        options:
+          - name: "Create PR from branch"
+            value: "create"
+          - name: "View PRs"
+            value: "view"
+          - name: "Open repo in browser"
+            value: "browse"
+    command: |
+      case "{{index .PromptResponses 0}}" in
+        create)
+          gh pr create --web
+          ;;
+        view)
+          gh pr list --web
+          ;;
+        browse)
+          gh repo view --web
+          ;;
+      esac
+    loadingText: "Opening on GitHub..."
+    stream: true
+
+os:
+  # OS-specific settings will be layered on top
+  edit: "nvim {{filename}}"
+  editAtLine: "nvim +{{line}} {{filename}}"
+  editInTerminal: true
+
+  # Edit commands
+  editPreset:
+    # macOS
+    Darwin:
+      edit: "nvim {{filename}}"
+      editAtLine: "nvim +{{line}} {{filename}}"
+
+    # Linux
+    Linux:
+      edit: "nvim {{filename}}"
+      editAtLine: "nvim +{{line}} {{filename}}"
+
+    # Windows
+    Windows:
+      edit: "nvim {{filename}}"
+      editAtLine: "nvim +{{line}} {{filename}}"
+
+  # Open commands
+  open:
+    Darwin:
+      command: "open {{filename}}"
+    Linux:
+      command: "xdg-open {{filename}} >/dev/null 2>&1"
+    Windows:
+      command: "cmd /c start \"\" {{filename}}"
+
+  # Open link commands
+  openLink:
+    Darwin:
+      command: "open {{link}}"
+    Linux:
+      command: "xdg-open {{link}}"
+    Windows:
+      command: "cmd /c start {{link}}"
+
+# === Disable Startup Popups ===
+# startupPopupVersion: 1
+# notARepository: "skip"

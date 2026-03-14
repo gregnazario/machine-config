@@ -1,0 +1,414 @@
+# Yazi File Manager Configuration
+# Base configuration for all operating systems
+# https://yazi-rs.github.io/
+
+[manager]
+# Ratio of parent/current/preview
+ratio = [1, 4, 3]
+# Sort direction
+sort_by = "alphabetical"
+# Sort sensitive
+sort_sensitive = false
+# Sort direction forwards/backwards
+sort_dir_first = true
+# Sort reverse
+sort_reverse = false
+# Linemode
+linemode = "size"  # Can be: none, size, mtime, permissions
+# Show hidden files
+show_hidden = false
+# Show symlink
+show_symlink = true
+# Sort methods
+sort_method = "size"  # Can be: size, mtime, alphabetical
+
+[preview]
+# Tab size
+tab_size = 2
+# Max height (0 = unlimited)
+max_height = 0
+# Max width (0 = unlimited)
+max_width = 0
+# Cache directory
+cache_dir = ""  # Leave empty for default
+
+[opener]
+# File openers
+edit = [
+  { run = '$EDITOR "$1"', desc = "$EDITOR" },
+  { run = 'nvim "$1"', desc = "nvim" },
+  { run = 'hx "$1"', desc = "hx" },
+]
+open = [
+  { run = 'xdg-open "$1"', desc = "Open" },
+  { run = 'open "$1"', desc = "Open (macOS)" },
+]
+reveal = [
+  { run = 'xdg-open "$1"', desc = "Open" },
+  { run = 'open "$1"', desc = "Open (macOS)" },
+]
+extract = [
+  { run = 'unar -1 "$1"', desc = "Extract here" },
+]
+play = [
+  { run = 'vlc "$1"', desc = "Play with VLC" },
+  { run = 'mpv "$1"', desc = "Play with mpv" },
+  { run = 'mplayer "$1"', desc = "Play with mplayer" },
+]
+
+[open]
+# Rules for opening files
+rules = [
+  # Folder
+  { name = "*/", use = ["edit", "open", "reveal"] },
+
+  # Text
+  { mime = "text/*", use = ["edit", "reveal"] },
+
+  # Image
+  { mime = "image/*", use = ["open", "reveal"] },
+
+  # Video
+  { mime = "video/*", use = ["play", "reveal"] },
+
+  # Audio
+  { mime = "audio/*", use = ["play", "reveal"] },
+
+  # Archive
+  { mime = "application/zip", use = ["extract", "reveal"] },
+  { mime = "application/gzip", use = ["extract", "reveal"] },
+  { mime = "application/x-tar", use = ["extract", "reveal"] },
+  { mime = "application/x-bzip2", use = ["extract", "reveal"] },
+  { mime = "application/x-7z-compressed", use = ["extract", "reveal"] },
+  { mime = "application/x-rar", use = ["extract", "reveal"] },
+  { mime = "application/xz-compressed-tar", use = ["extract", "reveal"] },
+
+  # JSON
+  { mime = "application/json", use = ["edit", "reveal"] },
+
+  # Fallback
+  { name = "*", use = ["open"] },
+]
+
+[tasks]
+# Tasks for bulk operations
+micro = [
+  { name = "*", command = "nvim", args = ["$0"] },
+]
+macro = [
+  { name = "bulk_rename", commands = [
+    "shell", "echo 'Rename files in bulk?'",
+    "confirm",
+    "rename",
+    "skip",
+  ] },
+]
+
+[plugin]
+# Plugin configurations
+
+# Preview plugins
+previewers = [
+  { name = "*", run = "preview", cond = { mime = "text/*" } },
+  { name = "*/", run = "folder", cond = { is_dir = true } },
+]
+
+# FZF integration
+[fzf]
+# Enable FZF integration
+enabled = true
+# FZF options
+opts = [
+  "--height=40%",
+  "--layout=reverse",
+  "--border",
+  "--preview='bat --color=always {}'",
+]
+
+# === Dracula Theme ===
+
+[theme]
+# Dracula theme for Yazi
+# Base colors
+[theme.manager]
+# cwd color
+cwd = { fg = "#8be9fd" }
+
+# Find selected
+find_selected = { fg = "#bd93f9", bold = true, italic = true }
+# Find keyword
+find_keyword = { fg = "#ff79c6", bold = true, italic = true }
+# Number
+number = { fg = "#6272a4" }
+# Number selected
+number_selected = { fg = "#282a36", bg = "#8be9fd" }
+
+# Border
+border_style = { fg = "#6272a4" }
+# Border symbol
+border_symbol = "│"
+# Border symbol active
+border_symbol_active = "│"
+# Progress
+progress = { fg = "#8be9fd", bg = "#282a36" }
+# Progress label
+progress_label = { bold = true }
+# Permissions
+permissions_t = { fg = "#ff79c6" } # Type
+permissions_r = { fg = "#8be9fd" } # Read
+permissions_w = { fg = "#f1fa8c" } # Write
+permissions_x = { fg = "#50fa7b" } # Execute
+permissions_s = { fg = "#6272a4" } # Special
+
+# Highlighted
+highlighted = { fg = "#282a36", bg = "#bd93f9" }
+# Highlighted buffer
+highlighted_buffer = { bg = "#bd93f9" }
+
+# File sizes
+size_byte = "#50fa7b"
+size_kilo = "#8be9fd"
+size_mega = "#bd93f9"
+size_giga = "#ff79c6"
+size_tera = "#f1fa8c"
+size_peta = "#ffb86c"
+# Unit
+size_unit = "#6272a4"
+# Unit separator
+size_unit_separator = " "
+
+# User
+user = { fg = "#8be9fd" }
+# Group
+group = { fg = "#50fa7b" }
+
+# Directory
+dir = { fg = "#8be9fd", bold = true }
+# Symlink
+symlink = { fg = "#ff79c6", italic = true }
+# Hardlink
+hardlink = { fg = "#ff79c6" }
+# Executable
+exec = { fg = "#50fa7b", bold = true }
+
+# Selected
+selected = { reversed = true }
+# Selected cursor
+selected_cursor = { bg = "#8be9fd", fg = "#282a36" }
+# Marker
+marker = { fg = "#ff79c6", bg = "#ff79c6" }
+# Marker selected
+marker_selected = { fg = "#282a36", bg = "#ff79c6" }
+
+# Count
+count_copied = { fg = "#282a36", bg = "#8be9fd" }
+# Count cut
+count_cut = { fg = "#282a36", bg = "#ff79c6" }
+# Count selected
+count_selected = { fg = "#282a36", bg = "#bd93f9" }
+
+# Tab
+tab_active = { fg = "#282a36", bg = "#8be9fd" }
+tab_inactive = { fg = "#f8f8f2", bg = "#44475a" }
+
+# Scroll bar
+scroll_bar = { fg = "#6272a4", bg = "#44475a" }
+# Scroll bar thumb
+scroll_bar_thumb = { fg = "#8be9fd", bg = "#8be9fd" }
+# Scroll bar status
+scroll_bar_status = { fg = "#8be9fd", bg = "#282a36" }
+# Scroll bar status active
+scroll_bar_status_active = { fg = "#50fa7b", bg = "#282a36" }
+
+# Help
+help_desc = { fg = "#6272a4" }
+help_on = { fg = "#50fa7b", bold = true }
+help_exec = { fg = "#bd93f9" }
+help_hover = { underline = true, fg = "#f8f8f2" }
+help_footer = { fg = "#6272a4", bold = true }
+
+# Input
+input = { fg = "#f8f8f2", bg = "#282a36" }
+input_border = { fg = "#8be9fd" }
+input_value = { fg = "#f8f8f2" }
+# Input value
+input_value_border = { fg = "#f8f8f2", bg = "#282a36" }
+
+# Completer
+completer = { fg = "#f8f8f2", bg = "#282a36" }
+completer_border = { fg = "#bd93f9" }
+completer_thumb = { fg = "#bd93f9", bg = "#44475a" }
+completer_selected = { fg = "#282a36", bg = "#bd93f9", bold = true }
+
+# Status
+statusseparator = { fg = "#6272a4" }
+status_ruler = { fg = "#f8f8f2" }
+# Percent
+status_percent = { fg = "#f8f8f2", bg = "#44475a" }
+# Percent remaining
+status_percent_remaining = { fg = "#f8f8f2", bg = "#44475a" }
+# Total
+status_total = { fg = "#f8f8f2", bg = "#44475a" }
+# Name
+status_name = { fg = "#f8f8f2", bold = true }
+# Permission
+status_perm = { fg = "#f8f8f2", bg = "#44475a" }
+# Modified
+status_modified = { fg = "#f1fa8c", bg = "#44475a" }
+# Modified indicator
+status_modified_indicator = { fg = "#f1fa8c" }
+# Directory
+status_dir = { fg = "#8be9fd", bg = "#44475a" }
+# Readonly
+status_readonly = { fg = "#ff79c6", bg = "#44475a" }
+# Staged
+status_staged = { fg = "#50fa7b", bg = "#44475a" }
+# Unstaged
+status_unstaged = { fg = "#ff79c6", bg = "#44475a" }
+# Untracked
+status_untracked = { fg = "#ff79c6", bg = "#44475a" }
+# Conflicted
+status_conflicted = { fg = "#ff5555", bg = "#44475a" }
+# Progress
+status_progress_label = { bold = true }
+# Progress normal
+status_progress_normal = { fg = "#8be9fd", bg = "#282a36" }
+# Progress success
+status_progress_success = { fg = "#50fa7b", bg = "#282a36" }
+# Progress error
+status_progress_error = { fg = "#ff5555", bg = "#282a36" }
+
+# Select
+select_active = { fg = "#282a36", bg = "#bd93f9" }
+select_inactive = { fg = "#f8f8f2" }
+
+# Prefix
+prefix = { fg = "#bd93f9", bold = true }
+
+# Spotlight
+spotlight = { fg = "#282a36", bg = "#bd93f9", bold = true }
+
+# Hover
+hover = { fg = "#f8f8f2", bg = "#44475a" }
+
+# Grayscale
+grayscale = {
+  [0] = "#282a36",  # Black
+  [1] = "#44475a",  # Gray
+  [2] = "#6272a4",  # Light gray
+  [3] = "#8be9fd",  # Cyan
+  [4] = "#bd93f9",  # Purple
+  [5] = "#ff79c6",  # Pink
+  [6] = "#f1fa8c",  # Yellow
+  [7] = "#50fa7b",  # Green
+  [8] = "#f8f8f2",  # White
+}
+
+[theme.preview]
+# Preview theme
+tab = { fg = "#6272a4" }
+# Border
+border = { fg = "#6272a4" }
+
+# === Keybindings ===
+
+[[keymap.bind]]
+# NOTE: The default keybindings are Vi-like
+# Uncomment and customize as needed
+
+# [keymap.bind]
+# on = [
+#   { exec = "close", desc = "Close the tab" },
+# ]
+
+# === Which key ===
+
+[which-key]
+# Sorting
+sort_by = "key"
+# Sorting sensitive
+sort_sensitive = false
+# Sorting reverse
+sort_reverse = false
+
+# === Sorting ===
+
+[sort]
+# Sort options
+sort_method = "size"  # Can be: size, mtime, alphabetical, natural, ext
+# Sort dir first
+sort_dir_first = true
+# Sort reverse
+sort_reverse = false
+# Sort sensitive
+sort_sensitive = false
+
+# === Linemode ===
+
+[linemode]
+# Size
+size = { size = "" }
+# Mtime
+mtime = { mtime = "" }
+# Permissions
+permissions = { perm = "" }
+# Custom
+custom = { fmt = "" }
+
+# === Filter ===
+
+[filter]
+# Filter patterns
+# Example: hidden_files = false
+# Example: only_files = true
+
+# === Confirm ===
+
+[confirm]
+# Confirm actions
+# Example: rm = false
+
+# === Log ===
+
+[log]
+# Enable logging
+# enabled = true
+
+# === Open ===
+
+[open]
+# Open rules
+# Example: rules = [ { mime = "image/*", use = ["open"] } ]
+
+# === Spotless ===
+
+[spotless]
+# Enable spotless mode
+# Example: false
+
+# === Yazi specific ===
+
+[yazi]
+# Enable zoxide integration
+# enabled = false
+
+# === Parent Preview ===
+
+[plugin.parent]
+# Show parent preview
+enabled = true
+
+# === Previewer ===
+
+[plugin.previewer]
+# Enable previewer
+enabled = true
+
+# === FZF ===
+
+[plugin.fzf]
+# Enable FZF integration
+enabled = true
+
+# === OS-specific overrides will be layered on top ===
+# source: navigation/yazi/os/$(detect-os)/yazi.toml

@@ -1,0 +1,31 @@
+// Zellij Windows/WSL-specific configuration overrides
+// This file is layered on top of base/config.kdl
+//
+// Windows-specific adjustments:
+// - Adjust for Windows Terminal behavior
+// - Handle WSL path differences
+
+// Override default shell for Windows
+// On WSL, use bash; on Windows native, let Zellij detect
+default_shell "bash"
+
+// Windows-specific keybinds (Ctrl already works well)
+keybinds {
+    normal {
+        // Keep Ctrl-based bindings for Windows
+        // Windows Terminal handles Ctrl well
+    }
+}
+
+// Adjust for Windows Terminal rendering
+ui {
+    pane_frames {
+        // Some Windows terminals render rounded corners poorly
+        rounded_corners false
+    }
+}
+
+// Session serialization - adjust paths for Windows/WSL
+session_serialization {
+    serialize_session true
+}

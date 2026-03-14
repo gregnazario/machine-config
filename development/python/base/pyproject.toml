@@ -1,0 +1,257 @@
+# Python Development Configuration
+# Base configuration for all operating systems
+
+# === pyproject.toml ===
+# This file configures various Python tools and utilities
+# Can be used as a template for new projects
+
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-python-project"
+dynamic = ["version"]
+description = "A Python project template"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "you@example.com"}
+]
+keywords = ["python", "template"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Add your project dependencies here
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-mock>=3.10",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.23",
+]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-mock>=3.10",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/yourproject"
+Repository = "https://github.com/yourusername/yourproject"
+Documentation = "https://yourproject.readthedocs.io"
+
+# === Tool Configurations ===
+
+# Black (Code Formatter)
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+
+# Ruff (Linter, replaces Flake8, isort, etc.)
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # unused imports
+"tests/*" = ["ARG"]      # unused arguments in tests
+
+[tool.ruff.isort]
+known-first-party = ["myproject"]
+force-single-line = false
+lines-after-imports = 2
+
+# Mypy (Type Checker)
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Set to true for stricter type checking
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "normal"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+# Pytest (Test Framework)
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+    "-v",
+]
+
+[tool.pytest.markers]
+slow = "marks tests as slow (deselect with '-m \"not slow\"')"
+integration = "marks tests as integration tests"
+unit = "marks tests as unit tests"
+
+# Coverage
+[tool.coverage.run]
+source = ["."]
+branch = true
+parallel = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.paths]
+source = [
+    "src",
+    "*/site-packages",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+# === Pip Configuration ===
+# Create: ~/.config/pip/pip.conf (Linux/macOS) or %APPDATA%\pip\pip.ini (Windows)
+# [global]
+# require-virtualenv = true  # Require virtualenv for pip installs
+# disable-pip-version-check = true
+# timeout = 60
+# retries = 5
+
+[global]
+require-virtualenv = true
+disable-pip-version-check = true
+timeout = 60
+
+[install]
+prefer-binary = true
+
+[freeze]
+requirement-files = requirements.txt
+
+# === pyenv Configuration ===
+# ~/.pyenv/version - Global Python version
+# 3.11.7
+
+# Project-specific Python version
+# .python-version file:
+# 3.11.7
+
+# === Virtual Environment Configuration ===
+# Virtualenv location
+# VENV_DIR=".venv"
+
+# === Poetry Configuration ===
+# If using Poetry instead of pip/pyenv
+# [tool.poetry]
+# name = "my-project"
+# version = "0.1.0"
+# description = "My Python project"
+# authors = ["Your Name <you@example.com>"]
+
+# [tool.poetry.dependencies]
+# python = "^3.9"
+
+# [tool.poetry.dev-dependencies]
+# pytest = "^7.0"
+# black = "^23.0"
+# ruff = "^0.1.0"
+
+# === Pre-commit Configuration ===
+# .pre-commit-config.yaml
+# repos:
+#   - repo: https://github.com/pre-commit/pre-commit-hooks
+#     rev: v4.5.0
+#     hooks:
+#       - id: trailing-whitespace
+#       - id: end-of-file-fixer
+#       - id: check-yaml
+#       - id: check-added-large-files
+#
+#   - repo: https://github.com/psf/black
+#     rev: 23.12.0
+#     hooks:
+#       - id: black
+#
+#   - repo: https://github.com/astral-sh/ruff-pre-commit
+#     rev: v0.1.8
+#     hooks:
+#       - id: ruff
+#         args: [--fix, --exit-non-zero-on-fix]
+#
+#   - repo: https://github.com/pre-commit/mirrors-mypy
+#     rev: v1.7.1
+#     hooks:
+#       - id: mypy
+#         additional_dependencies: [types-all]

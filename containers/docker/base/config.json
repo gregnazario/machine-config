@@ -1,0 +1,394 @@
+# Docker Configuration
+# Base configuration for all operating systems
+
+# === Docker CLI Aliases ===
+# Add to your shell config (.zshrc, .bashrc, config.fish)
+
+# === Container Management ===
+
+# List all containers (including stopped)
+alias dlsa='docker ps -a'
+
+# List running containers
+alias dls='docker ps'
+
+# List all images
+alias dli='docker images'
+
+# List all volumes
+alias dlv='docker volume ls'
+
+# List all networks
+alias dln='docker network ls'
+
+# === Container Operations ===
+
+# Stop all running containers
+alias dstop='docker stop $(docker ps -q)'
+
+# Remove all stopped containers
+alias drm='docker rm $(docker ps -a -q -f status=exited)'
+
+# Stop and remove all containers
+alias drma='docker stop $(docker ps -q) && docker rm $(docker ps -a -q)'
+
+# Remove all dangling images
+alias drmi='docker rmi $(docker images -f "dangling=true" -q)'
+
+# Remove all unused images
+alias drmia='docker image prune -a'
+
+# Remove all unused volumes
+alias drmv='docker volume prune -f'
+
+# Remove all unused networks
+alias drmn='docker network prune -f'
+
+# Deep clean (remove everything unused)
+alias dclean='docker system prune -a --volumes -f'
+
+# === Inspect Operations ===
+
+# Show container stats
+alias dstats='docker stats --no-stream'
+
+# Show container logs (follow)
+alias dlog='docker logs -f'
+
+# Show container IP
+alias dip='docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"'
+
+# Show container details
+alias dinspect='docker inspect'
+
+# === Image Operations ===
+
+# Pull latest image
+alias dpull='docker pull'
+
+# Push image
+alias dpush='docker push'
+
+# Build image (current directory)
+alias dbuild='docker build -t'
+
+# Tag image
+alias dtag='docker tag'
+
+# Save image to tar
+alias dsave='docker save'
+
+# Load image from tar
+alias dload='docker load'
+
+# === Volume Operations ===
+
+# Create volume
+alias dvcreate='docker volume create'
+
+# Remove volume
+alias dvrm='docker volume rm'
+
+# Inspect volume
+alias dvinspect='docker volume inspect'
+
+# === Network Operations ===
+
+# Create network
+alias dncreate='docker network create'
+
+# Remove network
+alias dnrm='docker network rm'
+
+# Inspect network
+alias dninspect='docker network inspect'
+
+# === Exec Operations ===
+
+# Execute command in container (interactive)
+alias dexec='docker exec -it'
+
+# Enter container shell
+alias denter="docker exec -it <container_id> /bin/bash"
+
+# === Compose Aliases ===
+
+# Docker Compose commands
+alias dc='docker compose'
+alias dcup='docker compose up -d'
+alias dcdown='docker compose down'
+alias dclogs='docker compose logs -f'
+alias dcps='docker compose ps'
+alias dcstart='docker compose start'
+alias dcstop='docker compose stop'
+alias dcrestart='docker compose restart'
+alias dcpull='docker compose pull'
+alias dcbuild='docker compose build'
+alias dcrebuild='docker compose build --no-cache'
+alias dcrm='docker compose rm -f'
+
+# === Docker BuildKit ===
+# Set environment variables for better builds
+
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+
+# Build with BuildKit
+alias dbuildk='DOCKER_BUILDKIT=1 docker build'
+
+# === Docker Context ===
+
+# List contexts
+alias dctx='docker context ls'
+
+# Use context
+alias dctxu='docker context use'
+
+# === Docker Hub Operations ===
+
+# Search Docker Hub
+alias dsearch='docker search'
+
+# Login to Docker Hub
+alias dlogin='docker login'
+
+# Logout from Docker Hub
+alias dlogout='docker logout'
+
+# === Utility Functions ===
+
+# Docker cleanup function
+docker_cleanup() {
+    echo "Removing stopped containers..."
+    docker rm $(docker ps -a -q -f status=exited) 2>/dev/null
+
+    echo "Removing dangling images..."
+    docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null
+
+    echo "Removing unused volumes..."
+    docker volume prune -f
+
+    echo "Removing unused networks..."
+    docker network prune -f
+
+    echo "Docker cleanup complete!"
+}
+
+# Docker stats function
+docker_stats() {
+    if [ -n "$1" ]; then
+        docker stats "$1"
+    else
+        docker stats --no-stream
+    fi
+}
+
+# Docker logs function (tail logs)
+docker_tail() {
+    if [ -z "$1" ]; then
+        echo "Usage: dtail <container_id_or_name> [lines]"
+        return 1
+    fi
+
+    local lines=${2:-100}
+    docker logs --tail "$lines" -f "$1"
+}
+
+# Docker shell function (enter container)
+docker_shell() {
+    if [ -z "$1" ]; then
+        echo "Usage: dsh <container_id_or_name> [shell]"
+        return 1
+    fi
+
+    local shell=${2:-bash}
+    docker exec -it "$1" "$shell"
+}
+
+# === Docker Compose Environment Variables ===
+# Create .env file in compose project root
+
+# COMPOSE_PROJECT_NAME=myproject
+# COMPOSE_FILE=docker-compose.yml:docker-compose.override.yml
+# COMPOSE_PATH_SEPARATOR=:
+# COMPOSE_HTTP_TIMEOUT=60
+
+# === Docker Daemon Configuration ===
+# /etc/docker/daemon.json (Linux)
+# ~/.docker/daemon.json (macOS/Windows)
+
+{
+  "builder": {
+    "gc": {
+      "enabled": true,
+      "defaultKeepStorage": "10GB"
+    }
+  },
+  "experimental": false,
+  "debug": false,
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "storage-driver": "overlay2",
+  "features": {
+    "buildkit": true
+  },
+  "registry-mirrors": [],
+  "insecure-registries": [],
+  "dns": ["8.8.8.8", "8.8.4.4"],
+  "live-restore": true,
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
+    }
+  },
+  "data-root": "/var/lib/docker",
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+
+# === Dockerignore Templates ===
+# Create .dockerignore in project root
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+LICENSE
+*.md
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Dependencies
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Test coverage
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+
+# Misc
+*.bak
+*.tmp
+*.temp
+
+# === Docker Compose Override ===
+# docker-compose.override.yml (automatically loaded)
+
+# services:
+#   myservice:
+#     environment:
+#       - DEBUG=1
+#     volumes:
+#       - ./src:/app/src
+
+# === Docker Compose Environment File ===
+# .env for Docker Compose
+
+# POSTGRES_VERSION=15
+# POSTGRES_PASSWORD=changeme
+# POSTGRES_DB=mydb
+# POSTGRES_USER=myuser
+
+# REDIS_VERSION=7
+
+# NODE_VERSION=20
+
+# === Multi-stage Build Optimization ===
+
+# Use specific base images
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS production
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+EXPOSE 3000
+CMD ["npm", "start"]
+
+# === Docker Buildx (Multi-platform) ===
+
+# Create builder
+# docker buildx create --name mybuilder --use
+
+# Build for multiple platforms
+# docker buildx build --platform linux/amd64,linux/arm64 -t myimage:latest .
+
+# === Registry Configuration ===
+
+# Login to registries
+# docker login ghcr.io
+# docker login registry.gitlab.com
+
+# Tag for registry
+# docker tag myimage:latest ghcr.io/username/myimage:latest
+
+# Push to registry
+# docker push ghcr.io/username/myimage:latest
+
+# === Notes ===
+
+# 1. Use .dockerignore to reduce build context size
+# 2. Use multi-stage builds to reduce final image size
+# 3. Tag images with version and commit hash
+# 4. Use BuildKit for better build performance
+# 5. Use specific version tags (not 'latest') in production
+# 6. Set resource limits on containers
+# 7. Use health checks for long-running services
+# 8. Use volumes for persistent data
+# 9. Use networks for service isolation
+# 10. Use secrets for sensitive data (swarm mode)

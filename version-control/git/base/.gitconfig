@@ -1,0 +1,341 @@
+# Git Configuration
+# Base configuration for all operating systems
+# This file contains user identity, aliases, and common settings
+
+[user]
+# IMPORTANT: Replace with your actual name and email
+# These can be overridden in OS-specific configs
+# name = Greg
+# email = greg@example.com
+
+# Signing commits with SSH/GPG (recommended)
+# Comment out if you don't want to sign commits
+# signingkey = ~/.ssh/id_ed25519.pub
+
+[commit]
+# Sign all commits by default
+# gpgsign = true
+
+# Template for commit messages
+# template = ~/.config/git/commit-message-template
+
+# GPG program for SSH key signing
+# gpgprogram = ssh-keygen
+
+# === Core Behavior ===
+[core]
+# Use SSH instead of HTTP for GitHub/GitLab
+# insteadOf = https://github.com/ = git@github.com:
+# insteadOf = https://gitlab.com/ = git@gitlab.com:
+# insteadOf = https://bitbucket.org/ = git@bitbucket.org:
+
+# Quote paths in output (useful for special characters)
+quotepath = false
+
+# File watching - improve performance on some filesystems
+# 0 = default, 1 = always, 2 = never
+# FSCACHE = use filesystem watcher
+# trustctime = false
+# fsmonitor = true
+
+# Whitespace handling
+whitespace = trailing-space,space-before-tab,indent-with-non-tab
+
+# Autocrlf - handle line endings
+# true = convert CRLF to LF on commit, LF to CRLF on checkout (Windows)
+# input = convert CRLF to LF on commit (macOS/Linux)
+# false = no conversion (recommended for mixed environments)
+autocrlf = input
+
+# Editor for commit messages, rebase, etc.
+editor = nvim
+
+# Pager for viewing logs/diffs
+pager = delta --paging=never
+
+# Excludes file (global gitignore)
+excludesfile = ~/.config/git/ignore
+
+# === Default Branch Name ===
+[init]
+defaultBranch = main
+
+# === Merge Behavior ===
+[merge]
+# Use 3-way merge by default
+conflictstyle = zdiff3
+
+# Show summary of merge commits
+log = true
+
+# Use configured tool for merge resolution
+tool = nvimdiff1
+
+[mergetool]
+# Keep backup files (.orig) after merge
+keepBackup = false
+
+# Prompt before continuing
+prompt = true
+
+[mergetool "nvimdiff1"]
+cmd = nvim -d $LOCAL $REMOTE
+trustExitCode = true
+
+# === Rebase Settings ===
+[rebase]
+# Auto-stash local changes before rebase
+autoStash = true
+
+# Rebase onto fetch updates
+autoSquash = true
+
+# === Pull Behavior ===
+[pull]
+# Rebase local commits on top of remote
+rebase = true
+
+# === Push Behavior ===
+[push]
+# Push only the current branch
+default = simple
+
+# Follow upstream tags
+followTags = true
+
+# === Color Settings ===
+[color]
+# Enable colors in output
+ui = true
+
+[color "branch"]
+current = yellow reverse
+local = yellow
+remote = green
+
+[color "diff"]
+meta = yellow bold
+frag = magenta bold
+old = red bold
+new = green bold
+whitespace = white reverse
+
+[color "status"]
+header = white bold
+added = green
+changed = yellow bold
+untracked = cyan
+branch = yellow
+nobranch = red
+
+# === Semantic Aliases ===
+# Descriptive aliases that make git commands clearer
+[alias]
+# === Status & Info ===
+# st = status (semantic: state)
+st = status
+
+# un = untracked files
+un = status --untracked-files=all
+
+# === Branch Operations ===
+# br = branches
+br = branch
+
+# co = checkout (switch branches/restore files)
+co = checkout
+
+# cb = checkout with new branch creation
+cb = checkout -b
+
+# === Commit Operations ===
+# ci = commit (semantic: check in)
+ci = commit
+
+# amend = amend last commit
+amend = commit --amend --no-edit
+
+# fixup = create fixup commit (for autosquashing)
+fixup = commit --fixup
+
+# === Log & History ===
+# lg = log graph (semantic: log graph)
+lg = log --oneline --graph --decorate --all
+
+# l = log with details
+l = log --oneline --graph --decorate
+
+# ll = long log format
+ll = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+# last = show last commit
+last = log -1 --stat
+
+# === Diff Operations ===
+# d = diff
+d = diff
+
+# dc = diff cached (staged changes)
+dc = diff --cached
+
+# ds = diff stats
+ds = diff --stat
+
+# === Remote Operations ===
+# fetch-all = fetch all remotes
+fetch-all = fetch --all
+
+# prune = prune remote branches
+prune = fetch --prune
+
+# === Merge & Rebase ===
+# mb = merge base
+mb = merge-base --is-ancestor
+
+# rb = rebase
+rb = rebase
+
+# rbi = rebase interactive
+rbi = rebase -i
+
+# continue = continue rebase/merge
+continue = !"git rebase --continue 2>/dev/null || git merge --continue 2>/dev/null || git cherry-pick --continue 2>/dev/null"
+
+# abort = abort rebase/merge
+abort = !"git rebase --abort 2>/dev/null || git merge --abort 2>/dev/null || git cherry-pick --abort 2>/dev/null"
+
+# === Reset & Undo ===
+# unstage = remove from staging
+unstage = reset HEAD --
+
+# discard = discard working directory changes
+discard = checkout -- .
+
+# undo = undo last commit (keep changes)
+undo = reset --soft HEAD~1
+
+# wipe = hard reset (dangerous!)
+wipe = reset --hard HEAD
+
+# === Stash Operations ===
+# save = stash with message
+save = stash push -m
+
+# pop = apply and remove stash
+pop = stash pop
+
+# list = list stashes
+list = stash list
+
+# === Utility Aliases ===
+# Assume a file is unchanged
+assume = update-index --assume-unchanged
+
+# Unassume a file
+unassume = update-index --no-assume-unchanged
+
+# Show assumed files
+assumed = !"git ls-files -v | grep '^[[:lower:]]'"
+
+# Edit ignored files
+edit-ignored = nvim ~/.config/git/ignore
+
+# Show aliases
+aliases = !"git config --get-regexp '^alias' | sed -E 's/alias\\.(\\w+)\\s+(.*)$/\\1 = \\2/' | sort"
+
+# === GitHub Integration ===
+# browse = open repo in browser
+browse = !"gh repo view --web"
+
+# pr = create pull request
+pr = !"gh pr create"
+
+# prs = list pull requests
+prs = !"gh pr list"
+
+# issues = list issues
+issues = !"gh issue list"
+
+# === Pretty Formats ===
+[pretty]
+# Custom pretty formats
+simple = "%C(red)%h%Creset %C(bold blue)%an%Creset: %s"
+fuller = "%C(bold red)%h%Creset %C(bold blue)%an%Creset %C(bold yellow)%ad%Creset %C(bold green)%d%Creset%n%s%n"
+oneline = "%C(yellow)%h%Creset %C(bold blue)%an%Creset: %s"
+
+# === URL Rewrites ===
+# Force SSH instead of HTTPS for common git hosts
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+
+[url "git@gitlab.com:"]
+    insteadOf = https://gitlab.com/
+
+[url "git@bitbucket.org:"]
+    insteadOf = https://bitbucket.org/
+
+# === Diff Tool Settings ===
+[diff]
+# Use delta pager if available (modern diff tool)
+# command = diff-highlight
+# external = difft
+
+# mnemonicprefix = true
+# renames = true
+
+# Rename detection threshold (percentage)
+# renameLimit = 1000
+
+# === Global Ignore ===
+# Files to ignore globally (see .config/git/ignore)
+
+# === Help Settings ===
+[help]
+# Use 'man' pages
+autocorrect = 1
+
+# === Log Settings ===
+[log]
+# Show dates in relative format (e.g., "2 days ago")
+date = relative
+
+# Show a summary of changes in log
+showSignature = true
+
+# === Status Settings ===
+[status]
+# Show branch and tracking info
+branch = true
+
+# Show untracked files
+untrackedFiles = all
+
+# === Tag Settings ===
+[tag]
+# Always sign tags
+# gpgsign = true
+
+# Sort tags by version
+sort = version:refname
+
+# === Branch Settings ===
+[branch]
+# Sort branches by last commit date
+sort = -committerdate
+
+# Setup remote for push
+setupRemote = always
+
+# Automatically setup merge/upstream
+autoSetupMerge = always
+autoSetupRebase = always
+
+# === Help Documentation ===
+# git aliases - run 'git aliases' to see all aliases
+# git st - show working tree status
+# git co - switch branches
+# git br - list branches
+# git ci - commit changes
+# git lg - pretty log graph
+# git unstage - remove from staging
+# git undo - soft reset last commit

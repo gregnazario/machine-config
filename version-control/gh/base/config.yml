@@ -1,0 +1,329 @@
+# GitHub CLI (gh) Configuration
+# Base configuration for all operating systems
+
+# === Authentication ===
+
+# Git protocol
+# Can be: ssh or https
+git_protocol: ssh
+
+# === Editor ===
+
+# Preferred editor for gh commands
+# Will use EDITOR environment variable if not set
+# editor:
+#   nvim
+# or
+# editor: ""
+
+# === Browser ===
+
+# Browser for opening URLs
+# Will use BROWSER environment variable if not set
+# browser:
+
+# === Pager ===
+
+# Pager for viewing long content
+pager: less -R
+
+# === Extensions ===
+
+# gh extensions to install
+extensions:
+  - gh-dash
+  - gh-eco
+  - gh-i
+  - gh-poi
+  - golang-gh-tr
+  - ghi
+
+# === gh-dash Configuration ===
+
+# gh-dash is a GitHub dashboard CLI
+# https://github.com/dlvhdr/gh-dash
+
+[gh-dash]
+# View configuration for gh dash
+
+# Dashboard sections
+# Can be: pull requests, issues, PRs, etc.
+
+# === gh-eco Configuration ===
+
+# gh-eco is a GitHub contributions CLI
+# https://github.com/hanked/gh-eco
+
+[gh-eco]
+# Contributions viewing
+
+# === gh-i Configuration ===
+
+# gh-i is an issue management CLI for gh
+# https://github.com/dlvhdr/gh-i
+
+[gh-i]
+# Issue management
+
+# === gh-poi Configuration ===
+
+# gh-poi is a PR management CLI for gh
+# https://github.com/seachicken/gh-poi
+
+[gh-poi]
+# PR management
+
+# === Issue Templates ===
+
+# Issue templates for gh issue create
+
+[templates]
+# Default issue template
+
+# === PR Templates ===
+
+# Pull request templates for gh pr create
+
+[pr]
+# Default PR template
+
+# === Alias Configuration ===
+
+# Aliases for gh commands
+# Example:
+# aliases:
+#   co: pr checkout
+#   vi: pr view
+#   wo: pr view --web
+
+aliases:
+  co: pr checkout
+  vi: pr view
+  vw: pr view --web
+  p: pr list
+  i: issue list
+  is: issue list
+  prs: pr list
+  pr: pr create
+
+# === Color ===
+
+# Color output
+color: true
+
+# === GraphQl ===
+
+# GraphQL endpoint
+# graphql: https://api.github.com/graphql
+
+# === HTTP ===
+
+# HTTP timeout (in seconds)
+# http_timeout: 30
+
+# === Help ===
+
+# Help configuration
+# show: all
+
+# === Default values ===
+
+# Default repository
+# Can be: owner/repo
+# default:
+
+# === Limit ===
+
+# Limit for list operations
+# Can be: 30, 50, 100
+# limit: 30
+
+# === Prompt ===
+
+# Prompt configuration
+# Can be: true or false
+prompt: true
+
+# === Notifications ===
+
+# Notifications settings
+# notifications: true
+
+# === Web ===
+
+# Web browser configuration
+# web: true
+
+# === SSH ===
+
+# SSH key for git operations
+# Will use SSH keys from ~/.ssh/
+
+# === Git ===
+
+# Git configuration
+# merge:
+#   method: merge
+#   commit_title: "Merge pull request #"
+
+# === Configuration File Location ===
+
+# macOS: ~/Library/Application Support/gh/config.yml
+# Linux/Unix: ~/.config/gh/config.yml
+# Windows: %APPDATA%\gh/config.yml
+
+# === Notes ===
+
+# The gh CLI stores its configuration in:
+# macOS: ~/Library/Application Support/gh/
+# Linux/Unix: ~/.config/gh/
+# Windows: %APPDATA%\gh/
+
+# Authentication tokens are stored in:
+# macOS: ~/Library/Application Support/gh/hosts.yml
+# Linux/Unix: ~/.config/gh/hosts.yml
+# Windows: %APPDATA%\gh/hosts.yml
+
+# === gh-dash Extensions ===
+
+# gh-dash provides a TUI dashboard for GitHub
+# Install: gh extension install dlvhdr/gh-dash
+
+# Keybindings:
+# - ?: Show help
+# - q: Quit
+# - Tab: Switch between sections
+# - Enter: Open PR/issue in browser
+# - o: Open PR/issue in gh PR view
+# - v: View PR diff
+# - c: Add comment
+# - r: Refresh
+
+# === gh-eco Extensions ===
+
+# gh-eco shows contributions graph
+# Install: gh extension install hanked/gh-eco
+
+# Usage:
+# gh eco
+# gh eco view
+# gh eco sync
+
+# === gh-i Extensions ===
+
+# gh-i is an interactive issue CLI
+# Install: gh extension install dlvhdr/gh-i
+
+# Usage:
+# gh i
+# gh i list
+# gh i view
+# gh i create
+
+# === gh-poi Extensions ===
+
+# gh-poi manages PRs more effectively
+# Install: gh extension install seachicken/gh-poi
+
+# Usage:
+# gh poi
+# gh poi list
+# gh poi view
+# gh poi checkout
+
+# === Common Aliases ===
+
+# PR aliases
+# pr: List pull requests
+# prs: List pull requests
+# pr create: Create a PR
+# pr view: View a PR
+# pr checkout: Checkout a PR
+# pr merge: Merge a PR
+# pr close: Close a PR
+# pr comment: Comment on a PR
+# pr diff: View PR diff
+# pr checks: View PR checks
+# pr status: View PR status
+
+# Issue aliases
+# issue: List issues
+# issues: List issues
+# i: List issues (short)
+# is: List issues (short)
+# issue create: Create an issue
+# issue view: View an issue
+# issue close: Close an issue
+# issue reopen: Reopen an issue
+# issue comment: Comment on an issue
+# issue edit: Edit an issue
+# issue lock: Lock an issue
+# issue unlock: Unlock an issue
+
+# Repo aliases
+# repo: List repos
+# repo create: Create a repo
+# repo view: View a repo
+# repo clone: Clone a repo
+# repo delete: Delete a repo
+# repo fork: Fork a repo
+
+# Gist aliases
+# gist: List gists
+# gist create: Create a gist
+# gist view: View a gist
+# gist edit: Edit a gist
+# gist delete: Delete a gist
+
+# Auth aliases
+# auth: Show auth status
+# auth login: Login to GitHub
+# auth logout: Logout from GitHub
+# auth status: Show auth status
+# auth switch: Switch GitHub account
+# auth setup: Setup GitHub credentials
+
+# Run aliases
+# run: Run a workflow
+# run list: List workflow runs
+# run view: View a workflow run
+# run watch: Watch a workflow run
+
+# Secret aliases
+# secret: List secrets
+# secret list: List secrets
+# secret set: Set a secret
+# secret delete: Delete a secret
+
+# Release aliases
+# release: List releases
+# release create: Create a release
+# release view: View a release
+# release delete: Delete a release
+
+# === gh Extensions Directory ===
+
+# Extensions are installed in:
+# macOS: ~/Library/Application Support/gh/extensions/
+# Linux/Unix: ~/.local/share/gh/extensions/
+# Windows: %APPDATA%\gh\extensions\
+
+# === gh Extensions Installation ===
+
+# Install an extension:
+# gh extension install <owner>/<repo>
+
+# Example:
+# gh extension install dlvhdr/gh-dash
+
+# List installed extensions:
+# gh extension list
+
+# Remove an extension:
+# gh extension remove <owner>/<repo>
+
+# Upgrade all extensions:
+# gh extension upgrade --all
+
+# === OS-specific overrides will be layered on top ===
+# source: version-control/gh/os/$(detect-os)/config.yml

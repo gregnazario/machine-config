@@ -1,0 +1,458 @@
+# Global Git Ignore File
+# These files will be ignored by all git repositories
+
+# === Operating Systems ===
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# macOS Finder
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# Linux
+*~
+.nfs*
+.directory
+.Trash-*
+
+# === IDEs and Editors ===
+
+# Vim/Neovim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+[._]vimrc.local
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+.dir-locals.el
+
+# Helix
+.helix/
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# === Build and Compilation ===
+
+# C/C++
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+
+# Rust
+/target/
+**/*.rs.bk
+.cargo/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+venv.bak/
+venv.tmp/
+
+# PyCharm
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# pyenv
+.python-version
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.pnp.js
+.pnp.cjs
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# pnpm
+pnpm-lock.yaml
+.pnpm-store/
+
+# TypeScript
+*.tsbuildinfo
+
+# === Package Managers ===
+
+# Cargo (Rust)
+.cargo/
+
+# Composer (PHP)
+vendor/
+
+# Bundler (Ruby)
+vendor/bundle/
+
+# Maven (Java)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Gradle (Java)
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# Go
+*.test
+*.prof
+go.work
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# === Docker ===
+
+# Docker
+.dockerignore
+
+# Docker Compose
+*.dockerfile
+
+# === Secrets and Credentials ===
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.local
+!.env.test
+!.env.production
+
+# Private keys
+*.key
+*.pem
+*.p12
+*.pfx
+*.asc
+.id_rsa
+.id_ed25519
+.ssh/
+
+# Password stores
+passwords.txt
+secrets.txt
+credentials.txt
+
+# Database credentials
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+
+# AWS
+.aws/config
+.aws/credentials
+
+# === Logs and Databases ===
+
+# Log files
+*.log
+*.log.*
+logs/
+*.log.zip
+*.log.gz
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db3
+
+# === Backups and Temporary Files ===
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+# Swap files
+*.swp
+*.swo
+*.swn
+
+# Lock files
+*.lock
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Cache
+.cache/
+*.cache
+
+# === Version Control ===
+
+# Git
+.git/
+*.orig
+
+# Mercurial
+.hg/
+
+# Subversion
+.svn/
+
+# === Project Specific ===
+
+# OS-specific files
+.fuse_hidden*
+
+# Keep NordVPN files out
+*.nordvpn
+
+# Zellij history and sessions
+.zellij_history/
+
+# Fish shell history
+.fish_history.*
+
+# Zsh history
+.zsh_history
+.zsh_sessions/
+
+# Bash history
+.bash_history
+.bash_sessions/
+
+# === Misc ===
+
+# Local configuration overrides
+*.local
+*.local.*
+
+# But DO track example files
+!*.local.example
+!*.local.sample
+!example.*
+
+# Profiling and benchmarking
+*.prof
+*.pprof
+*.bench
+
+# Coverage reports
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Jekyll
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# Hugo
+/resources/public/
+.hugo_build.lock
+
+# === Specific Tools ===
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+terraform.tfstate.backup
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ansible
+*.retry
+ansible/group_vars/
+ansible/host_vars/
+
+# Kubernetes
+*.kubeconfig
+kubeconfig*
+
+# Helm
+charts/*.tgz
+
+# Vagrant
+.vagrant/
+Vagrantfile.local
+
+# === Large Binary Files ===
+
+# Images (uncomment if you don't want to track images)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.svg
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# PDFs
+# *.pdf
+
+# Audio/Video
+# *.mp3
+# *.mp4
+# *.wav
+# *.avi

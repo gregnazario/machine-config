@@ -1,0 +1,286 @@
+# SSH Configuration
+# Base configuration for all operating systems
+# ~/.ssh/config
+
+# === General Settings ===
+
+# Hash host names for security
+HashKnownHosts yes
+
+# Use known hosts file
+UserKnownHostsFile ~/.ssh/known_hosts
+
+# Connection keepalive
+ServerAliveInterval 60
+ServerAliveCountMax 3
+
+# Keepalive intervals (send null packet to server)
+TCPKeepAlive yes
+
+# Connection sharing (faster subsequent connections)
+ControlMaster auto
+ControlPath ~/.ssh/cm/%r@%h:%p
+ControlPersist 600
+
+# Compression (for slow connections)
+# Compression yes
+# CompressionLevel 6
+
+# Escape character
+EscapeChar ~
+
+# === Connection Settings ===
+
+# Reconnect automatically
+# ReconnectDelay 15
+
+# Connection timeout
+ConnectTimeout 10
+
+# Number of tries
+ConnectionAttempts 3
+
+# === Authentication ===
+
+# Forward authentication agent
+ForwardAgent no
+
+# Allow agent forwarding
+# AllowAgentForwarding yes
+
+# Forward X11
+ForwardX11 no
+ForwardX11Trusted yes
+
+# Password authentication (disable if you use keys only)
+# PasswordAuthentication no
+
+# Keyboard-interactive authentication
+# KbdInteractiveAuthentication no
+
+# Preferred authentication
+# PreferredAuthentications publickey,keyboard-interactive,password
+
+# Identity files (private keys)
+IdentityFile ~/.ssh/id_ed25519
+IdentityFile ~/.ssh/id_rsa
+# IdentityFile ~/.ssh/id_ecdsa
+
+# Add keys to agent
+# AddKeysToAgent yes
+
+# === Host Aliases ===
+
+# GitHub
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+
+# GitLab
+Host gitlab.com
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+
+# Bitbucket
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+
+# === Development Servers ===
+
+# Example: Personal server
+# Host myserver
+#     HostName example.com
+#     User greg
+#     Port 22
+#     IdentityFile ~/.ssh/id_ed25519
+#     IdentitiesOnly yes
+
+# === Proxy/Jump Hosts ===
+
+# Example: Jump host configuration
+# Host jumphost
+#     HostName jumphost.example.com
+#     User greg
+#
+# Host behind-jump
+#     HostName internal.example.com
+#     User greg
+#     ProxyJump jumphost
+
+# === Special Configurations ===
+
+# Localhost (for testing)
+Host localhost
+    HostName 127.0.0.1
+    User greg
+    Port 2222
+
+# === Wildcard Hosts ===
+
+# All hosts
+Host *
+    # Use key authentication
+    PubkeyAuthentication yes
+
+    # Host key algorithms
+    HostKeyAlgorithms ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-ed25519,ssh-rsa
+
+    # KEX algorithms
+    KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+
+    # Ciphers
+    Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr
+
+    # MACs
+    MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
+
+    # Server alive interval
+    ServerAliveInterval 60
+
+    # Connection timeout
+    ConnectTimeout 10
+
+    # Visual host key
+    VisualHostKey no
+
+# === Conditional Blocks ===
+
+# Match on OS (for OS-specific settings)
+# Host *
+#     Match host * exec "uname -s | grep -q Darwin"
+#         # macOS-specific settings
+#         UseKeychain yes
+
+# Match on user
+# Match User greg
+#     IdentityFile ~/.ssh/id_greg_ed25519
+
+# Match on local host
+# Match exec "hostname | grep -q my-workstation"
+#     IdentityFile ~/.ssh/id_workstation_ed25519
+
+# === Example Configurations ===
+
+# Home server
+# Host homeserver
+#     HostName 192.168.1.100
+#     User greg
+#     Port 22
+#     IdentityFile ~/.ssh/id_ed25519
+#     LocalForward 8080 localhost:8080
+
+# Remote server with custom port
+# Host remoteserver
+#     HostName example.com
+#     User greg
+#     Port 2222
+#     IdentityFile ~/.ssh/id_ed25519
+
+# VS Code Remote SSH
+# Host vscode
+#     HostName example.com
+#     User greg
+#     IdentityFile ~/.ssh/id_ed25519
+#     RemoteCommand code serve-local --without-connection-token
+#     RequestTTY yes
+
+# === Tunnels ===
+
+# Local tunnel (forward remote port to local)
+# Host tunnel-local
+#     HostName remote.example.com
+#     User greg
+#     LocalForward 3306 localhost:3306  # MySQL
+#     LocalForward 6379 localhost:6379  # Redis
+
+# Remote tunnel (forward local port to remote)
+# Host tunnel-remote
+#     HostName remote.example.com
+#     User greg
+#     RemoteForward 3306 localhost:3306
+
+# Dynamic tunnel (SOCKS proxy)
+# Host tunnel-dynamic
+#     HostName remote.example.com
+#     User greg
+#     DynamicForward 1080
+
+# === Include Files ===
+
+# Include OS-specific configs
+# Include ~/.ssh/config.d/os-*.conf
+
+# Include host-specific configs
+# Include ~/.ssh/config.d/host-*.conf
+
+# Include work configs (don't commit these!)
+# Include ~/.ssh/config.work
+
+# === Visual Host Keys ===
+
+# Enable visual host key fingerprint
+# VisualHostKey yes
+
+# === IPQoS ===
+
+# Set IP QoS (Quality of Service)
+# IPQoS throughput
+# IPQoS lowdelay high throughput
+
+# === Rekey ===
+
+# Rekey limit
+# RekeyLimit 1G 1h
+
+# === Fingerprint Hash ===
+
+# Fingerprint hash algorithm
+# FingerprintHash sha256
+
+# === CASignatureAlgorithms ===
+
+# Certificate signature algorithms
+# CASignatureAlgorithms ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521
+
+# === LogLevel ===
+
+# Log level (QUIET, FATAL, ERROR, INFO, VERBOSE, DEBUG, DEBUG1, DEBUG2, DEBUG3)
+LogLevel INFO
+
+# === SyslogFacility ===
+
+# Syslog facility
+# SyslogFacility AUTH
+
+# === Notes ===
+
+# 1. Use specific host entries for better organization
+# 2. Use IdentityFile to specify which key to use
+# 3. Use ProxyJump for multi-hop connections
+# 4. Use LocalForward/RemoteForward for port forwarding
+# 5. Use ControlMaster for connection sharing
+# 6. Set ServerAliveInterval to prevent disconnections
+# 7. Use ssh-keygen -t ed25519 for new keys (recommended)
+# 8. Use ssh-copy-id to copy public key to remote server
+# 9. Test configuration with: ssh -F ~/.ssh/config hostname
+# 10. Validate config with: ssh -F ~/.ssh/config -T hostname
+
+# === Security Best Practices ===
+
+# 1. Disable password authentication (use keys only)
+# 2. Use ed25519 keys (preferred over RSA)
+# 3. Use a passphrase for private keys
+# 4. Use ssh-agent to store unlocked keys
+# 5. Limit which users can SSH (AllowUsers in sshd_config)
+# 6. Use 2FA/MFA when available
+# 7. Regularly rotate keys
+# 8. Use specific host entries (not wildcards)
+# 9. Use jump hosts for sensitive servers
+# 10. Monitor SSH logs (/var/log/auth.log or /var/log/secure)

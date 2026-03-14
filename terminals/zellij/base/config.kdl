@@ -1,0 +1,124 @@
+// Zellij base configuration
+// This configuration applies to all operating systems
+//
+// For OS-specific overrides, see os/<os>/config.kdl
+
+// Reduce default scrollback buffer for better performance
+default_shell "fish"
+
+// UI configuration
+ui {
+    pane_frames {
+        rounded_corners true
+    }
+}
+
+// Plugin configuration
+plugins {
+    // Status bar plugin
+    tab-bar {
+        path "compact-bar"
+    }
+
+    // File picker
+    // strider {
+    //     path "zellij-strider"
+    // }
+}
+
+// Keybinds - non-colliding preset
+keybinds clear-defaults=true {
+    locked {
+        bind "Ctrl g" { SwitchToMode "Normal"; }
+    }
+    normal {
+        // Lock session
+        bind "Ctrl g" { SwitchToMode "Locked"; }
+
+        // Pane management
+        bind "Ctrl p" {
+            launch_or_focus_plugin "file_picker" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "Normal"
+        }
+
+        // Tab management
+        bind "Ctrl t" { NewTab; SwitchToMode "Normal"; }
+        bind "Alt 1" { GoToTab 1; }
+        bind "Alt 2" { GoToTab 2; }
+        bind "Alt 3" { GoToTab 3; }
+        bind "Alt 4" { GoToTab 4; }
+        bind "Alt 5" { GoToTab 5; }
+        bind "Alt 6" { GoToTab 6; }
+        bind "Alt 7" { GoToTab 7; }
+        bind "Alt 8" { GoToTab 8; }
+        bind "Alt 9" { GoToTab 9; }
+
+        // Pane navigation
+        bind "Alt h" { MoveFocusOrTab "Left"; }
+        bind "Alt l" { MoveFocusOrTab "Right"; }
+        bind "Alt k" { MoveFocus "Up"; }
+        bind "Alt j" { MoveFocus "Down"; }
+
+        // Pane management
+        bind "Alt n" { NewPane; SwitchToMode "Normal"; }
+        bind "Alt q" { ClosePane; SwitchToMode "Normal"; }
+
+        // Resize panes
+        bind "Alt =" { Resize "Increase"; }
+        bind "Alt -" { Resize "Decrease"; }
+
+        // Session management
+        bind "Alt o" { LaunchOrFocusPlugin "session-manager"; }
+    }
+    pane {
+        bind "Ctrl p" { SwitchToMode "Normal"; }
+        bind "h" { MoveFocus "Left"; }
+        bind "l" { MoveFocus "Right"; }
+        bind "k" { MoveFocus "Up"; }
+        bind "j" { MoveFocus "Down"; }
+        bind "n" { NewPane; SwitchToMode "Normal"; }
+        bind "q" { ClosePane; SwitchToMode "Normal"; }
+    }
+    tab {
+        bind "Ctrl t" { SwitchToMode "Normal"; }
+        bind "h" { GoToPreviousTab; }
+        bind "l" { GoToNextTab; }
+        bind "n" { NewTab; SwitchToMode "Normal"; }
+        bind "q" { CloseTab; SwitchToMode "Normal"; }
+    }
+    resize {
+        bind "Ctrl r" { SwitchToMode "Normal"; }
+        bind "h" { Resize "Increase Left"; }
+        bind "l" { Resize "Increase Right"; }
+        bind "k" { Resize "Increase Up"; }
+        bind "j" { Resize "Increase Down"; }
+        bind "=" { Resize "Decrease"; }
+        bind "-" { Resize "Decrease"; }
+    }
+}
+
+// Session management
+session_serialization {
+    // Save session for resurrection
+    serialize_session true
+}
+
+// Theme - Solarized Dark equivalent
+themes {
+    default {
+        fg "#839496"
+        bg "#002b36"
+        red "#dc322f"
+        green "#859900"
+        yellow "#b58900"
+        blue "#268bd2"
+        magenta "#d33682"
+        orange "#cb4b16"
+        cyan "#2aa198"
+        white "#eee8d5"
+        black "#002b36"
+    }
+}

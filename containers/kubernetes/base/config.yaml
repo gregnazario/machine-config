@@ -1,0 +1,558 @@
+# Kubernetes Configuration
+# Base configuration for kubectl, k9s, and Krew
+
+# === kubectl Configuration ===
+# Location: ~/.kube/config
+
+# === kubectl Aliases ===
+# Add to your shell config (.zshrc, .bashrc, config.fish)
+
+# General kubectl aliases
+alias k='kubectl'
+alias kc='kubectl'
+
+# Context aliases
+alias kctx='kubectl config use-context'
+alias kcur='kubectl config current-context'
+alias kctxs='kubectl config get-contexts'
+
+# Namespace aliases
+alias kns='kubectl config set-context --current --namespace'
+alias kn='kubectl config view --minify -o jsonpath='{..namespace}'
+
+# Get pods
+alias kgp='kubectl get pods'
+alias kgs='kubectl get services'
+alias kgd='kubectl get deployments'
+alias kgsec='kubectl get secrets'
+alias kgcm='kubectl get configmaps'
+alias king='kubectl get ingress'
+alias kgpv='kubectl get persistentvolumes'
+alias kgpvc='kubectl get persistentvolumeclaims'
+alias kgall='kubectl get all'
+
+# Describe
+alias kdp='kubectl describe pod'
+alias kds='kubectl describe service'
+alias kdd='kubectl describe deployment'
+alias kdsec='kubectl describe secret'
+
+# Logs
+alias kl='kubectl logs'
+alias klf='kubectl logs -f'
+alias klp='kubectl logs -p'
+
+# Exec
+alias ke='kubectl exec -it'
+alias kex='kubectl exec -it'
+
+# Apply
+alias ka='kubectl apply -f'
+alias kaf='kubectl apply -f'
+
+# Delete
+alias kd='kubectl delete -f'
+alias kdf='kubectl delete -f'
+
+# Port forward
+alias kpf='kubectl port-forward'
+
+# Scale
+alias ksc='kubectl scale'
+
+# Top
+alias ktop='kubectl top nodes'
+alias ktp='kubectl top pods'
+
+# Edit
+alias ke='kubectl edit'
+
+# k9s aliases
+alias k9='k9s'
+alias k9s='k9s'
+
+# === kubectl Configuration ===
+
+# Enable shell autocompletion
+# For bash:
+# source <(kubectl completion bash)
+# echo "source <(kubectl completion bash)" >> ~/.bashrc
+
+# For zsh:
+# source <(kubectl completion zsh)
+# echo "source <(kubectl completion zsh)" >> ~/.zshrc
+
+# For fish:
+# kubectl completion fish | source
+# echo "kubectl completion fish | source" > ~/.config/fish/completions/kubectl.fish
+
+# === kubectl Settings ===
+
+# Default namespace
+# kubectl config set-context --current --namespace=default
+
+# Change default namespace
+# kubens <namespace>
+
+# Set default namespace in config
+# kubectl config set-context --current --namespace=<namespace>
+
+# === k9s Configuration ===
+# Location: ~/.config/k9s/config.yaml
+
+# k9s main configuration
+k9s:
+  # UI settings
+  liveView:
+    autoRefresh: true
+
+  # Screen ratios
+  screenBodyMinRatio: 0.2
+  screenHeaderHeight: 2
+
+  # Logging
+  logging:
+    disable: false
+
+  # Skip latest version check
+  skipLatestRevCheck: false
+
+  # Wait for resource
+  wait: true
+
+  # Connection timeout
+  connectionTimeout: 5
+
+  # Refresh rate
+  refreshRate: 2
+
+  # Mouse support
+  headless: false
+
+  # Readonly mode
+  readOnly: false
+
+  # Debug mode
+  debug: false
+
+  # === Dracula Theme ===
+  # k9s Dracula theme configuration
+
+  # UI colors
+  body:
+    fgColor: "#f8f8f2"
+    bgColor: "#282a36"
+    logoColor: "#8be9fd"
+
+  # Screen headers
+  header:
+    fgColor: "#f8f8f2"
+    bgColor: "#282a36"
+    logoColor: "#8be9fd"
+
+  # Skin
+  skin: dracula
+
+  # Views
+  views:
+    # Dashboard view
+    yaml:
+      fgColor: "#8be9fd"
+      bgColor: "#282a36"
+      logoColor: "#bd93f9"
+
+    # Logs view
+    logs:
+      fgColor: "#f8f8f2"
+      bgColor: "#282a36"
+      logoColor: "#50fa7b"
+
+# k9s skin (Dracula theme)
+skin:
+  # General
+  default:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+    selected:
+      fg: "#282a36"
+      bg: "#bd93f9"
+
+  # Colors
+  special:
+    fg: "#8be9fd"
+    bg: "#282a36"
+
+  # Tree
+  tree:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+    selected:
+      fg: "#282a36"
+      bg: "#bd93f9"
+
+  # Border
+  border:
+    fg: "#6272a4"
+    bg: "#282a36"
+
+  # Status
+  status:
+    new:
+      fg: "#50fa7b"
+      bg: "#282a36"
+    modified:
+      fg: "#f1fa8c"
+      bg: "#282a36"
+    error:
+      fg: "#ff5555"
+      bg: "#282a36"
+    highlight:
+      fg: "#bd93f9"
+      bg: "#282a36"
+    fail:
+      fg: "#ff5555"
+      bg: "#282a36"
+    kill:
+      fg: "#ff79c6"
+      bg: "#282a36"
+    warn:
+      fg: "#ffb86c"
+      bg: "#282a36"
+
+  # Command
+  command:
+    fg: "#8be9fd"
+    bg: "#282a36"
+
+  # Header
+  header:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+
+  # Title
+  title:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+
+  # Crumb
+  crumb:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+
+  # Info
+  info:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+
+  # Frame
+  frame:
+    border:
+      fg: "#6272a4"
+      bg: "#282a36"
+    active:
+      fg: "#bd93f9"
+      bg: "#282a36"
+
+  # Dialog
+  dialog:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+    border:
+      fg: "#6272a4"
+      bg: "#282a36"
+    title:
+      fg: "#f8f8f2"
+      bg: "#282a36"
+    button:
+      fg: "#f8f8f2"
+      bg: "#282a36"
+
+  # Charts
+  chart:
+    fg: "#f8f8f2"
+    bg: "#282a36"
+    dataset:
+      green:
+        fg: "#50fa7b"
+        bg: "#282a36"
+      yellow:
+        fg: "#f1fa8c"
+        bg: "#282a36"
+      red:
+        fg: "#ff5555"
+        bg: "#282a36"
+    cursor:
+      fg: "#282a36"
+      bg: "#bd93f9"
+
+# === k9s Views ===
+
+# View configurations
+views:
+  # Cluster view
+  vpa:
+    enabled: true
+
+  # Logs view
+  logs:
+    enabled: true
+
+  # Container view
+  containers:
+    enabled: true
+
+# === k9s Keybindings ===
+
+keybinding:
+  # Keybindings configuration
+  # Most keybindings are built-in
+  # Customize here if needed
+
+# === k9s Plugins ===
+
+# k9s plugins configuration
+plugins:
+  # Plugin locations
+  pluginsLocation: /usr/local/lib/k9s/plugins
+
+  # Enabled plugins
+  active:
+    # Log explorer plugin
+    - log-explorer
+
+    # Helm plugin (if using Helm)
+    # - helm
+
+    # Neovim plugin
+    # - neovim
+
+    # VIM plugin
+    # - vim
+
+# === kubectl Configuration ===
+
+# kubectl configuration file
+# Location: ~/.kube/config
+
+apiVersion: v1
+kind: Config
+preferences:
+  colors: true
+
+# === kubectl Contexts ===
+
+# Context configuration
+# Example:
+# contexts:
+#   - name: my-cluster
+#     context:
+#       cluster: my-cluster
+#       user: my-user
+#     namespace: default
+
+# === kubectl Clusters ===
+
+# Cluster configuration
+# Example:
+# clusters:
+#   - name: my-cluster
+#     cluster:
+#       server: https://my-cluster.example.com
+#       certificate-authority: /path/to/ca.crt
+
+# === kubectl Users ===
+
+# User configuration
+# Example:
+# users:
+#   - name: my-user
+#     user:
+#       token: my-token
+#       client-certificate: /path/to/cert
+#       client-key: /path/to/key
+
+# === kubectl Namespaces ===
+
+# Namespace configuration
+# Example:
+# namespaces:
+#   - name: default
+#   - name: kube-system
+#   - name: kube-public
+
+# === Krew Configuration ===
+
+# Krew plugin manager for kubectl
+# https://krew.sigs.k8s.io/
+
+# Krew installation
+# Run the following commands to install Krew:
+# ```bash
+# cd "$(mktemp -d)"
+# curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew-linux_amd64.tar.gz"
+# tar zxvf krew-linux_amd64.tar.gz
+# ./krew-linux_amd64 install krew
+# ```
+# For macOS:
+# ```bash
+# brew install krew
+# ```
+
+# Add to PATH
+# Add $HOME/.krew/bin to your PATH
+
+# Krew plugins to install
+# Install with: kubectl krew install
+
+# Useful krew plugins:
+# - krew: Plugin manager
+# - kubectx: Manage kubectl context
+# - kubens: Manage kubectl namespace
+# - kubectl-get-all: List all resources
+# - kubectl-usurp: Steal the terminal
+# - kubectl-whoami: Show current context
+# - kubectl-shell: Open shell to pod
+# - kubectl-open: Open service in browser
+# - kubectl-sudo: Run commands as root
+# - kubectl-wipe: Wipe resources
+# - kubectl-tree: Show resource tree
+
+# krew plugins configuration
+# Location: ~/.krew/config.yaml
+
+# === kubectx ===
+
+# kubectx: faster way to switch between kubectl contexts
+# Install: kubectl krew install ctx
+
+# kubectx keybindings:
+# kubectl ctx
+# kubectl ctx <context-name>
+# kubectl ctx - = delete context
+# kubectl ctx -d = delete context
+
+# === kubens ===
+
+# kubens: faster way to switch between kubectl namespaces
+# Install: kubectl krew install ns
+
+# kubens keybindings:
+# kubectl ns
+# kubectl ns <namespace>
+# kubectl ns - = go to previous namespace
+
+# === kubectl-get-all ===
+
+# kubectl-get-all: List all resources
+# Install: kubectl krew install get-all
+
+# Usage:
+# kubectl get-all -A
+
+# === kubectl-tree ===
+
+# kubectl-tree: Show resource tree
+# Install: kubectl krew install tree
+
+# Usage:
+# kubectl tree deployment <deployment-name>
+# kubectl tree pod <pod-name>
+
+# === kubectl-open ===
+
+# kubectl-open: Open service in browser
+# Install: kubectl krew install open
+
+# Usage:
+# kubectl open svc/<service-name>
+
+# === kubectl-shell ===
+
+# kubectl-shell: Open shell to pod
+# Install: kubectl krew install ssh
+
+# Usage:
+# kubectl ssh <pod-name>
+
+# === kubectl-sudo ===
+
+# kubectl-sudo: Run commands as root
+# Install: kubectl krew install sudo
+
+# Usage:
+# kubectl-sudo <pod-name> -- command
+
+# === kubectl-wipe ===
+
+# kubectl-wipe: Wipe resources
+# Install: kubectl krew install wipe
+
+# Usage:
+# kubectl wipe pod <pod-name>
+
+# === kubectl-usurp ===
+
+# kubectl-usurp: Steal the terminal
+# Install: kubectl krew install usurp
+
+# Usage:
+# kubectl-usurp <pod-name>
+
+# === kubectl-whoami ===
+
+# kubectl-whoami: Show current context
+# Install: kubectl krew install whoami
+
+# Usage:
+# kubectl whoami
+
+# === kubectl-debug ===
+
+# kubectl-debug: Debug running pods
+# Install: kubectl krew install debug
+
+# Usage:
+# kubectl debug <pod-name>
+
+# === Starship Prompt Integration ===
+
+# Add Starship prompt for kubectl
+# Starship will show kubernetes context and namespace
+
+# Show Kubernetes module in prompt
+[kubernetes]
+# Show Kubernetes module
+format = 'on [⛵](bold blue) [$context](bold blue) [$namespace](green) '
+disabled = false
+
+# Context aliases
+# Display shortened context names
+[[kubernetes.context_aliases]]
+# Example: shorten long context names
+"context-name" = "alias"
+
+# Context colors
+[[kubernetes.context_colors]]
+# Colorize different contexts
+"context-name" = "green"
+"production" = "red"
+"staging" = "yellow"
+
+# === Notes ===
+
+# kubectl configuration locations:
+# - Config: ~/.kube/config
+# - Cache: ~/.kube/cache
+# - HTTP cache: ~/.kube/http-cache
+
+# k9s configuration locations:
+# - Config: ~/.config/k9s/config.yaml
+# - Skins: ~/.config/k9s/skins/
+# - Logs: ~/.config/k9s/logs/
+
+# Krew configuration locations:
+# - Plugins: ~/.krew/store/
+# - Config: ~/.krew/config.yaml
+
+# === OS-specific overrides will be layered on top ===
+# source: containers/kubernetes/os/$(detect-os)/config.yaml

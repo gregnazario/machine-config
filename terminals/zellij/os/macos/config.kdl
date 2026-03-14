@@ -1,0 +1,24 @@
+// Zellij macOS-specific configuration overrides
+// This file is layered on top of base/config.kdl
+//
+// macOS-specific adjustments:
+// - Use Cmd key instead of Ctrl where appropriate
+// - Adjust for macOS Terminal.app behavior
+
+// Override default shell for macOS
+default_shell "fish"
+
+// macOS-specific keybind overrides
+keybinds {
+    normal {
+        // Use Cmd key for major operations on macOS
+        bind "Cmd g" { SwitchToMode "Locked"; }
+        bind "Cmd t" { NewTab; SwitchToMode "Normal"; }
+        bind "Cmd o" { LaunchOrFocusPlugin "session-manager"; }
+    }
+}
+
+// macOS clipboard integration
+plugins {
+    // Adjust for macOS clipboard behavior
+}

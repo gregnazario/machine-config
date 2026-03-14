@@ -1,0 +1,119 @@
+# Secrets - NEVER commit these
+*.key
+*.pem
+*.asc
+secrets/
+.env
+.env.local
+.*/secrets/
+**/secrets/
+
+# Personal information
+**/ssh/authorized_keys
+**/ssh/known_hosts
+**/ssh/id_*
+**/age/private.key
+**/vault/tokens
+**/totp/shared-secrets/*
+
+# OS-specific files that shouldn't be synced
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor files
+*~
+.*.sw*
+.*.swo
+.*.swp
+.netrwhist
+*~
+.\#*
+\#*\#
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+**/tmp/
+
+# Cache and runtime
+*.log
+*.pid
+*.sock
+**/cache/
+**/logs/
+**/run/
+**/.cache/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+
+# Backup files
+*.bak
+*.backup
+*.old
+**/*.backup
+**/*.bak
+
+# Compressed files (unless they're part of the dotfiles)
+*.tar.gz
+*.zip
+*.7z
+*.rar
+# Except for archive templates
+!/archive/**/*.example
+
+# Generated files
+**/generated/
+**/autoload/
+**/pack/
+**/plugged/
+
+# Tool-specific (keep the config, ignore the data)
+**/zellij/history/
+**/zellij/sessions/
+**/lazygit/state/
+**/fish/fish_history.*
+**/zsh/history*
+**/nushell/env.nu.local
+
+# Package manager directories
+**/vendor/
+**/bundle/
+**/plugged/
+
+# Build artifacts
+**/target/
+**/dist/
+**/build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Test files
+**/tests/temp/
+**/test-results/
+
+# IDE (keep config, ignore workspace)
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Local overrides (per-machine configuration)
+**/local.*
+**/*.local
+**/private.*
+
+# But DO track example local configs
+!**/*.local.example
+!**/local.*.example
