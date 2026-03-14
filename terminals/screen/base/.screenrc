@@ -1,0 +1,181 @@
+# GNU Screen Configuration
+# Base configuration with sensible defaults
+
+# === Basic Settings ===
+
+# Turn off start-up welcome message
+startup_message off
+
+# Define a bigger scrollback buffer (default is 100)
+defscrollback 10000
+
+# Use UTF-8 encoding
+defutf8 on
+
+# === Status Bar ===
+
+# Enable the hardstatus bar
+hardstatus on
+
+# Hardstatus line format
+# Shows: window list, current window, hostname, date/time
+hardstatus alwayslastline
+hardstatus string '%{= kG}[%= %{= kw}%?%L%?%?%F%?%?%h%:%t %?%{= kG}%?%{= kw}%?]%{= kG}][%{= kB}%Y-%m-%d %{= kW}%c:%s %{= kG}]'
+
+# Window title (for terminal window title)
+termcapinfo xterm* 'hs:ts=\E]2;:fs=\E\\:ds=\E]2;\073screen\073'
+termcapinfo xterm* 'EVtn'
+
+# === Keybindings ===
+
+# Use Ctrl+a as the command key (escape key)
+# This matches tmux configuration
+escape ^aa
+
+# Screen keybindings
+bind c screen 1         # Create window at position 1
+bind ^c screen 1        # Same with Ctrl
+bind 0 select 10        # Make window 0 actually window 10
+bind 9 select 9         # Select window 9
+
+# Navigation
+bind Tab focus          # Cycle through windows
+bind prev               # Previous window
+bind next               # Next window
+bind ^a                 # Other window (toggle)
+bind ^w                 # Window list
+
+# Splits
+bind S split            # Split horizontally
+bind V split -v         # Split vertically
+bind Q only             # Keep only current window
+bind | split -v         # Vertical split
+bind - split            # Horizontal split
+
+# Navigation between splits
+bindtab layout q        # Close layout
+bindtab layout tab      # Switch regions
+bindtab layout up       # Move to upper region
+bindtab layout down     # Move to lower region
+bindtab layout left     # Move to left region
+bindtab layout right    # Move to right region
+
+# Window management
+bind K kill             # Kill current window
+bind A title            # Set window title
+bind n next             # Next window
+bind p prev             # Previous window
+bind w windowlist -b    # Window list
+bind ' ' windowlist -b  # Window list with space
+
+# Copy mode (like vim)
+bind ^[ copy            # Enter copy mode (Ctrl+Esc)
+bind ] paste .          # Paste buffer
+
+# Other useful bindings
+bind ? help             # Help
+bind t time             # Show time
+bind k kill             # Kill region/window
+bind d detach           # Detach session
+bind D detach           # Detach session
+bind r redisplay        # Redisplay
+bind ^l redisplay       # Redisplay (Ctrl+L)
+
+# === Visual Bells ===
+
+# Turn off visual bell
+vbell off
+
+# Use audible bell (can be annoying)
+# bell_msg "Bell in window %n"
+
+# === Window Numbering ===
+
+# Number windows from 1 (not 0)
+bind 0 select 10
+bind c screen 1
+bind ^c screen 1
+
+# Automatically renumber windows when one is closed
+setenv LANG en_US.UTF-8
+
+# === Logging ===
+
+# Turn on logging
+logfile /tmp/screen-%n.%Y%m%d-%H%M%S.log
+deflog on
+
+# === Permissions ===
+
+# Enable ACL
+aclchg -r +r wx#?      # Allow everyone to see windows
+aclchg +rwx ?           # Full permissions for owner
+
+# === Screen Appearance ===
+
+# Enable 256 colors
+attrcolor b ".I"
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+termcapinfo xterm-256color 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# Use xterm scrollback
+termcapinfo xterm*@ ti@:te@
+
+# === Shell Settings ===
+
+# Set default shell
+shell -$SHELL
+
+# === Altscreen ===
+
+# Enable alternate screen (applications can use full screen)
+altscreen on
+
+# === Activity Monitoring ===
+
+# Monitor for activity (silence)
+monitor on
+monitor off
+
+# Monitor for silence
+silencewait 15
+
+# === Autogroup ===
+
+# Automatically group similar windows
+# autogroup on
+
+# === Window Lists ===
+
+# Window list format
+windowlist string "%4n %h%=%f"
+
+# Caption (window list at bottom)
+caption always "%{= kw}%?%F%?%?%h%:%t%? %=%{= kW}[%n]"
+
+# === Status Line ===
+
+# Status line at bottom
+sorendition "=kG"
+
+# === Misc ===
+
+# Paste settings
+paste .                 # Paste buffer
+
+# Shell lock
+shelllock on            # Lock shell on detach
+
+# Messages
+msgwait 2               # Display messages for 2 seconds
+
+# === Dracula-like Colors ===
+
+# Status bar colors
+sorendition "kG"
+
+# Caption colors
+caption string "%{= kg}[%= %{= kw}%?%F%?%?%h%:%t%? %{= kg}%=][%{= kW}%n]"
+
+# Hardstatus colors
+hardstatus string '%{= kG}[%= %{= kw}%?%F%?%?%h%:%t %?%{= kG}%?%{= kw}%?%{= kG}][%{= kB}%Y-%m-%d %{= kW}%c:%s %{= kG}]'
