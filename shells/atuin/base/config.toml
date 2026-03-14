@@ -1,0 +1,130 @@
+# Atuin Configuration
+# Shell history with sync, search, and analytics
+
+# === Connection Settings ===
+
+# Atuin server URL (default is https://api.atuin.sh)
+# For self-hosted, change this URL
+db_path = "~/.local/share/atuin/history.db"
+
+# === Sync Settings ===
+
+# Enable automatic sync
+sync_address = "https://api.atuin.sh"
+sync_records = true
+
+# Sync frequency (in seconds)
+# 0 = manual only
+sync_frequency = 0
+
+# === Search Settings ===
+
+# Search mode
+# Options: "full", "prefix", "fuzzy", "skim"
+# full = search entire command
+# prefix = match from start
+# fuzzy = fuzzy matching
+# skim = skim-like fuzzy search
+search_mode = "fuzzy"
+
+# Search filter
+# Options: "global", "session", "directory"
+# global = search all history
+# session = only current session
+# directory = only current directory
+search_filter = "global"
+
+# Search key binding
+# Ctrl+R for reverse history search (default)
+keymap_ctrl_r = false
+
+# === UX Settings ===
+
+# Show help
+show_help = true
+
+# Show preview
+enter_accept = false
+
+# Auto-sync
+auto_sync = true
+
+# Update check
+update_check = true
+
+# === Data Settings ===
+
+# Inline info
+inline_info = true
+
+# Filter mode
+filter_mode_shell_up_key = "directory"
+
+# === Style Settings ===
+
+# Style
+# Options: "auto", "compact", "full"
+style = "auto"
+
+# Cursor style
+# Options: "blink", "steady"
+cursor_style = "blink"
+
+# === History Settings ===
+
+# History filter
+# Prevent recording certain commands
+history_filter = [
+  "^ls$",
+  "^ll$",
+  "^la$",
+  "^cd$",
+  "^pwd$",
+  "^exit$",
+  "^clear$",
+]
+
+# Do not record commands matching regex
+secrets_filter = true
+
+# Do not save commands with sensitive data
+secret_filter = [
+  "password*",
+  "apikey*",
+  "api_key*",
+  "*password*",
+  "secret*",
+]
+
+# === Daemon Settings ===
+
+# Daemon address
+daemon_address = "http://127.0.0.1:8888"
+
+# Daemon timeout (seconds)
+daemon_timeout = 60
+
+# === Keymap ===
+
+# Keybindings
+# These are the default keybindings
+# You can customize them here
+
+# === Network Settings ===
+
+# Network timeout (seconds)
+network_timeout = 30
+
+# Network retries
+network_retries = 3
+
+# === Privacy ===
+
+# Do not send anonymous statistics
+send_stats = true
+
+# === Encryption ===
+
+# Key encryption
+key = ""
+key_format = "None"

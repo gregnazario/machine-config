@@ -1,0 +1,123 @@
+# Direnv Configuration
+# This file is loaded when entering directories with .envrc files
+
+# === Logging ===
+
+# Set log level
+# Options: error, warn, info, debug, trace
+export DIRENV_LOG_FORMAT=""
+
+# === Watch ===
+
+# Watch files for changes (default: false)
+# watch_file <file>
+
+# === Layout Detection ===
+
+# Automatically detect project layout and set PATH
+# This is enabled by default in modern direnv
+# use direnv autoload
+
+# === Node.js Projects ===
+
+# Node.js: use node version from .nvmrc or .node-version
+# use node
+
+# Node.js: load from .nvmrc
+# layout node
+
+# === Python Projects ===
+
+# Python: use virtualenv from .venv
+# layout python
+
+# Python: use specific python version
+# layout python3.11
+
+# === Ruby Projects ===
+
+# Ruby: use version from .ruby-version
+# layout ruby
+
+# === Go Projects ===
+
+# Go: set GOPATH
+# layout go
+
+# === Perl Projects ===
+
+# Perl: use local::lib
+# layout perl
+
+# === Java Projects ===
+
+# Java: set JAVA_HOME
+# layout java
+
+# === Rust Projects ===
+
+# Rust: no special layout needed
+# Just set PATH for cargo bin
+# PATH_add bin
+# PATH_add target/debug
+
+# === Custom Utilities ===
+
+# Add directory to PATH
+# PATH_add bin
+
+# Load environment variables from file
+# dotenv .env
+
+# Load environment variables if file exists
+# dotenv_if_exists .env.local
+
+# Watch specific file for changes
+# watch_file package.json
+
+# Define custom function
+# my_function() {
+#     echo "Custom function"
+# }
+
+# === Aliases ===
+
+# Define shell aliases (loaded in shell)
+# alias ll='ls -la'
+
+# === Example Configurations ===
+
+# Node.js project with .nvmrc
+# layout node
+# watch_file package.json
+# PATH_add node_modules/.bin
+
+# Python project with virtualenv
+# layout python
+# watch_file requirements.txt
+# watch_file setup.py
+
+# Go project
+# layout go
+# PATH_add bin
+
+# Rust project
+# watch_file Cargo.toml
+# PATH_add target/debug
+
+# Mixed project (Node.js + Python)
+# layout node
+# layout python3
+# watch_file package.json
+# watch_file requirements.txt
+# PATH_add node_modules/.bin
+
+# === Include Hooks ===
+
+# Load local overrides if they exist
+# dotenv_if_exists .env.local
+
+# Load project-specific direnv config
+# if [ -f .direnvrc ]; then
+#     source .direnvrc
+# fi
