@@ -721,6 +721,7 @@ if HAS_CURSES:
 			# Navigation state
 			self.cursor_pos = 0  # Current highlighted item
 			self.max_items = 1   # Number of items on current screen
+			self.action_buttons = []  # Track action buttons for navigation
 
 			# Initialize tool selections (all unselected)
 			for category in CATEGORIES:
@@ -1524,11 +1525,12 @@ if HAS_CURSES:
 				pass
 			line += 2
 
-			# Set max items for navigation
-			self.max_items = len(self.categories_list)
+			# Set max items for navigation (categories + buttons)
+			self.max_items = len(self.categories_list) + 2  # +2 for Accept and Back buttons
 			# Don't reset cursor_pos - preserve it for navigation
 
 			self.category_buttons = []
+			self.action_buttons = []  # Track action buttons for navigation
 
 			for idx, category in enumerate(self.categories_list):
 				cat_y = line + idx
@@ -1573,10 +1575,31 @@ if HAS_CURSES:
 
 			# Action buttons
 			button_y = cat_y + 2
-			self.draw_button(button_y, 6, "Accept", True)
-			self.draw_button(button_y, 22, "Back")
+			# Store button info for navigation
+			accept_idx = len(self.categories_list)
+			back_idx = len(self.categories_list) + 1
 
-			self.draw_footer("Click category to edit | Accept when done | q: Quit")
+			# Draw Accept button (highlighted if cursor is on it)
+			is_accept_selected = (self.cursor_pos == accept_idx)
+			self.draw_button(button_y, 6, "Accept", True, is_accept_selected)
+			self.action_buttons.append({
+				'idx': accept_idx,
+				'action': 'accept',
+				'y': button_y,
+				'x': 6
+			})
+
+			# Draw Back button (highlighted if cursor is on it)
+			is_back_selected = (self.cursor_pos == back_idx)
+			self.draw_button(button_y, 22, "Back", False, is_back_selected)
+			self.action_buttons.append({
+				'idx': back_idx,
+				'action': 'back',
+				'y': button_y,
+				'x': 22
+			})
+
+			self.draw_footer("↑/↓ or j/k: Navigate | Enter: Select | q: Quit")
 			return {'screen': 'categories', 'button_y': button_y}
 
 		def screen_tools(self, category: str):
@@ -1596,11 +1619,12 @@ if HAS_CURSES:
 				pass
 			line += 2
 
-			# Set max items for navigation
-			self.max_items = len(tools)
+			# Set max items for navigation (tools + buttons)
+			self.max_items = len(tools) + 3  # +3 for All, None, Done buttons
 			# Don't reset cursor_pos - preserve it for navigation
 
 			self.tool_buttons = []
+			self.action_buttons = []  # Track action buttons for navigation
 
 			# Two columns
 			for idx, tool in enumerate(tools):
@@ -1638,11 +1662,43 @@ if HAS_CURSES:
 
 			# Action buttons
 			button_y = y + 2
-			self.draw_button(button_y, 8, "All")
-			self.draw_button(button_y, 22, "None")
-			self.draw_button(button_y, 36, "Done", True)
 
-			self.draw_footer("↑/↓ or j/k: Navigate | Space: Toggle | Enter: Done | q: Quit")
+			# Store button info for navigation
+			all_idx = len(tools)
+			none_idx = len(tools) + 1
+			done_idx = len(tools) + 2
+
+			# Draw All button (highlighted if cursor is on it)
+			is_all_selected = (self.cursor_pos == all_idx)
+			self.draw_button(button_y, 8, "All", False, is_all_selected)
+			self.action_buttons.append({
+				'idx': all_idx,
+				'action': 'select_all',
+				'y': button_y,
+				'x': 8
+			})
+
+			# Draw None button (highlighted if cursor is on it)
+			is_none_selected = (self.cursor_pos == none_idx)
+			self.draw_button(button_y, 22, "None", False, is_none_selected)
+			self.action_buttons.append({
+				'idx': none_idx,
+				'action': 'select_none',
+				'y': button_y,
+				'x': 22
+			})
+
+			# Draw Done button (highlighted if cursor is on it)
+			is_done_selected = (self.cursor_pos == done_idx)
+			self.draw_button(button_y, 36, "Done", True, is_done_selected)
+			self.action_buttons.append({
+				'idx': done_idx,
+				'action': 'done',
+				'y': button_y,
+				'x': 36
+			})
+
+			self.draw_footer("↑/↓ or j/k: Navigate | Space: Toggle | Enter: Select | q: Quit")
 			return {'screen': 'tools', 'category': category, 'button_y': button_y}
 
 		def screen_confirm(self):
@@ -1697,10 +1753,32 @@ if HAS_CURSES:
 
 			# Buttons
 			line += 1
-			self.draw_button(line, 6, "Install", True)
-			self.draw_button(line, 22, "Cancel")
 
-			self.draw_footer("Click Install to proceed | Cancel to abort | q: Quit")
+			# Set up navigation for buttons
+			self.max_items = 2  # Just Install and Cancel
+			self.action_buttons = []
+
+			# Draw Install button (highlighted if cursor is on it)
+			is_install_selected = (self.cursor_pos == 0)
+			self.draw_button(line, 6, "Install", True, is_install_selected)
+			self.action_buttons.append({
+				'idx': 0,
+				'action': 'install',
+				'y': line,
+				'x': 6
+			})
+
+			# Draw Cancel button (highlighted if cursor is on it)
+			is_cancel_selected = (self.cursor_pos == 1)
+			self.draw_button(line, 22, "Cancel", False, is_cancel_selected)
+			self.action_buttons.append({
+				'idx': 1,
+				'action': 'cancel',
+				'y': line,
+				'x': 22
+			})
+
+			self.draw_footer("←/→ or h/l: Choose | Enter: Select | q: Quit")
 			return {'screen': 'confirm', 'button_y': line}
 
 		def handle_input(self, event, screen_data):
@@ -1798,8 +1876,12 @@ if HAS_CURSES:
 				return 'refresh'
 
 			elif event == ord('h') or event == ord('H'):
-				# Vim left (go back)
-				if self.current_screen == 'tools':
+				# Vim left
+				if self.current_screen == 'confirm':
+					# Move between Install and Cancel buttons
+					self.cursor_pos = 0
+					return 'refresh'
+				elif self.current_screen == 'tools':
 					action = 'back'
 					return action
 				elif self.current_screen == 'categories':
@@ -1807,8 +1889,12 @@ if HAS_CURSES:
 					return action
 
 			elif event == ord('l') or event == ord('L'):
-				# Vim right (enter/accept)
-				if self.current_screen == 'profiles':
+				# Vim right
+				if self.current_screen == 'confirm':
+					# Move between Install and Cancel buttons
+					self.cursor_pos = 1
+					return 'refresh'
+				elif self.current_screen == 'profiles':
 					profiles = screen_data.get('profiles', [])
 					if 0 <= self.cursor_pos < len(profiles):
 						profile_key = profiles[self.cursor_pos]
@@ -1833,6 +1919,18 @@ if HAS_CURSES:
 					self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
 				return 'refresh'
 
+			elif event in (curses.KEY_LEFT, 260, 0x104):
+				# Left arrow
+				if self.current_screen == 'confirm':
+					self.cursor_pos = 0
+					return 'refresh'
+
+			elif event in (curses.KEY_RIGHT, 261, 0x105):
+				# Right arrow
+				if self.current_screen == 'confirm':
+					self.cursor_pos = 1
+					return 'refresh'
+
 			# Space to toggle checkboxes
 			elif event == ord(' '):
 				if self.current_screen == 'tools':
@@ -1853,14 +1951,33 @@ if HAS_CURSES:
 						profile_key = profiles[self.cursor_pos]
 						action = f'profile_{profile_key}'
 				elif self.current_screen == 'categories':
-					# Activate the highlighted category
-					if 0 <= self.cursor_pos < len(self.categories_list):
+					# Check if cursor is on a button
+					if hasattr(self, 'action_buttons') and self.action_buttons:
+						for btn in self.action_buttons:
+							if btn['idx'] == self.cursor_pos:
+								action = btn['action']
+								break
+					# Otherwise activate the highlighted category
+					if action is None and 0 <= self.cursor_pos < len(self.categories_list):
 						category = self.categories_list[self.cursor_pos]
 						action = f'category_{category}'
 				elif self.current_screen == 'tools':
-					action = 'done'
+					# Check if cursor is on a button
+					if hasattr(self, 'action_buttons') and self.action_buttons:
+						for btn in self.action_buttons:
+							if btn['idx'] == self.cursor_pos:
+								action = btn['action']
+								break
+					# Otherwise toggle the highlighted tool
+					if action is None:
+						action = 'done'
 				elif self.current_screen == 'confirm':
-					action = 'install'
+					# Check if cursor is on a button
+					if hasattr(self, 'action_buttons') and self.action_buttons:
+						for btn in self.action_buttons:
+							if btn['idx'] == self.cursor_pos:
+								action = btn['action']
+								break
 
 			return action
 
