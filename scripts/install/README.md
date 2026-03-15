@@ -25,49 +25,81 @@ The installer uses a **bootstrap pattern**:
 ./scripts/install.sh
 ```
 
-### Direct Python Usage
+The installer will automatically install Python 3 if it's missing.
 
-```bash
-# If you prefer to run Python directly
-python3 scripts/install/install.py
-```
+### Installation Profiles
 
-## Requirements
+The installer includes predefined profiles for common use cases:
 
-- **Python 3.6+** - Required for the interactive installer
-- **POSIX shell** (sh, bash, dash, etc.) - Only for bootstrap and category scripts
+1. **Minimal** (4 tools)
+   - Essential tools for everyday use
+   - zsh, fd, ripgrep, fzf, git, tldr
+   - Perfect for new users or minimal setups
 
-## Installation Flow
+2. **Developer** (~20 tools)
+   - Full development environment
+   - Editors: neovim
+   - Languages: python, rust, nodejs
+   - Tools: git, gh, lazygit, docker, btop
+   - Great for software developers
 
-1. **Bootstrap** (`install.sh`)
-   - Checks for Python 3 installation
-   - Validates Python version (3.6+)
-   - Delegates to Python installer
+3. **Terminal Ninja** (~25 tools)
+   - Focus on terminal productivity
+   - Multiplexers: zellij, tmux
+   - Shells: zsh, fish
+   - All navigation and monitoring tools
+   - Ideal for terminal power users
 
-2. **Welcome & Detection** (`install.py`)
-   - Displays system information
-   - Detects operating system
-   - Shows welcome message
+4. **System Administrator** (~15 tools)
+   - Server and system management tools
+   - Containers: docker, kubernetes
+   - Monitoring: btop, glances
+   - Network and transfer tools
+   - Perfect for sysadmins
 
-3. **Category Selection**
-   - Interactive menu to select tool categories
-   - Preview tools in each category
-   - Select all or specific categories
+5. **Full Setup** (All tools)
+   - Every available tool configured
+   - For when you want everything
+   - Use with caution!
+
+6. **Custom** (Choose your own)
+   - Hand-pick specific tools
+   - Edit categories individually
+   - Toggle tools on/off
+   - Maximum control
+
+### Installation Flow
+
+1. **Python Check** (Automatic)
+   - Installs Python 3 if missing
+   - Upgrades if version too old
+
+2. **Profile Selection**
+   - Choose from predefined profiles
+   - Or select custom for manual selection
+
+3. **Tool Selection** (If custom or customizing profile)
+   - Browse tools by category
+   - See selection status [All/X/None]
+   - Toggle individual tools
+   - Accept when ready
 
 4. **Confirmation**
-   - Shows summary of selections
-   - Displays target OS
-   - Confirms before proceeding
+   - Review all selected tools
+   - Grouped by category
+   - Total tool count
+   - Confirm to proceed
 
 5. **Installation**
-   - Runs category-specific install scripts
-   - Creates symlinks and merges configs
-   - Reports success/failure for each category
+   - Runs category installers
+   - Creates symlinks
+   - Merges configurations
+   - Reports success/failure
 
-6. **Completion**
-   - Displays installation summary
-   - Shows next steps
-   - Reports any failures
+6. **Summary**
+   - Installation results
+   - Next steps
+   - Failure details (if any)
 
 ## Supported Categories
 
@@ -86,6 +118,67 @@ python3 scripts/install/install.py
 - `archive` - Archive tools (compressors, parallel, unar, image-tools)
 - `documentation` - Documentation (tldr, tealdeer, man, cheat, docuum)
 - `fun` - Fun utilities (fetch, utilities, qalc)
+
+## Examples
+
+### Install Minimal Profile
+
+```bash
+./scripts/install.sh
+# Select: 1) Minimal
+# Choose: 1) Accept as-is
+# Confirm: y
+```
+
+### Install Developer Profile with Customization
+
+```bash
+./scripts/install.sh
+# Select: 2) Developer
+# Choose: 2) Customize
+# Edit categories as needed
+# Accept when ready
+# Confirm: y
+```
+
+### Custom Installation
+
+```bash
+./scripts/install.sh
+# Select: 6) Custom
+# Edit each category
+# Accept when ready
+# Confirm: y
+```
+
+## Adding a New Profile
+
+Edit `scripts/install/install.py` and add to `PROFILES` dict:
+
+```python
+PROFILES = {
+    # ... existing profiles ...
+    'myprofile': {
+        'name': 'My Profile',
+        'description': 'Description of what this profile is for',
+        'tools': {
+            'shells': ['zsh', 'fish'],
+            'navigation': ['fd', 'ripgrep'],
+            # ... more categories and tools
+        }
+    },
+}
+```
+
+Or use `'tools': 'all'` to include all tools:
+
+```python
+'my-full': {
+    'name': 'My Full Setup',
+    'description': 'Everything I need',
+    'tools': 'all'  # All tools from all categories
+}
+```
 
 ## Adding a New Category
 
@@ -131,16 +224,19 @@ CATEGORIES = {
 
 ### "Python 3 is not installed"
 
-Install Python 3 using your system package manager:
+The installer will attempt to install Python 3 automatically. If it fails:
 
+**Install manually:**
 - **macOS**: `brew install python@3`
 - **Fedora**: `sudo dnf install python3`
 - **Ubuntu**: `sudo apt install python3`
 - **Arch**: `sudo pacman -S python`
 
+Then run the installer again.
+
 ### "Python 3.6 or higher is required"
 
-Your system has an old Python version. Update to Python 3.6 or newer.
+The installer will try to upgrade Python automatically. If it fails, upgrade manually using your package manager.
 
 ### Installer exits unexpectedly
 
@@ -156,33 +252,28 @@ Check the specific installer script:
 
 ```bash
 # Run installer directly
-sh scripts/install/install-<category>.sh $(detect-os) $(pwd)
+sh scripts/install/install-<category>.sh $(./scripts/utils/detect-os.sh) $(pwd)
 ```
 
 ## Development
 
 ### Testing the Installer
 
-To test the installer without making changes:
+To test profile selection:
 
 ```bash
-# Dry run - just display what would be installed
-python3 scripts/install/install.py --help
+echo "1" | ./scripts/install.sh  # Select minimal profile
 ```
 
-### Adding Python Dependencies
+To test custom selection (interactive):
 
-If you need external Python packages:
+```bash
+./scripts/install.sh
+# Select: 6) Custom
+# Test category navigation and tool toggling
+```
 
-1. Create `scripts/install/requirements.txt`
-2. Update bootstrap to install requirements:
-   ```bash
-   pip install -r scripts/install/requirements.txt
-   ```
-
-**Note**: Currently, the installer uses only Python standard library to avoid dependency issues.
-
-## File Structure
+### File Structure
 
 ```
 scripts/
