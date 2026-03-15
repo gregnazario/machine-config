@@ -10,14 +10,21 @@
 # - arch: Arch Linux
 # - gentoo: Gentoo Linux
 # - ubuntu: Ubuntu Linux
+# - debian: Debian Linux
+# - mint: Linux Mint
 # - void: Void Linux
 # - oracle: Oracle Linux
 # - rocky: Rocky Linux
+# - almalinux: AlmaLinux
 # - alpine: Alpine Linux
 # - opensuse: openSUSE Leap/Tumbleweed
 # - amazon: Amazon Linux 2023
-# - windows: Windows 11 (WSL or native via MSYS2/Git Bash)
+# - solus: Solus Linux
 # - freebsd: FreeBSD
+# - openbsd: OpenBSD
+# - netbsd: NetBSD
+# - nixos: NixOS Linux
+# - windows: Windows 11 (WSL or native via MSYS2/Git Bash)
 # - unknown: Unable to detect
 
 detect_os() {
@@ -56,6 +63,14 @@ detect_os() {
 			echo "ubuntu"
 			return 0
 			;;
+		debian)
+			echo "debian"
+			return 0
+			;;
+		linuxmint)
+			echo "mint"
+			return 0
+			;;
 		arch)
 			echo "arch"
 			return 0
@@ -76,6 +91,10 @@ detect_os() {
 			echo "rocky"
 			return 0
 			;;
+		almalinux)
+			echo "almalinux"
+			return 0
+			;;
 		alpine)
 			echo "alpine"
 			return 0
@@ -88,14 +107,22 @@ detect_os() {
 			echo "amazon"
 			return 0
 			;;
-		debian | raspbian)
+		solus)
+			echo "solus"
+			return 0
+			;;
+		nixos)
+			echo "nixos"
+			return 0
+			;;
+		raspbian)
 			# Check if Raspberry Pi
 			if grep -q "Raspberry Pi" /proc/cpuinfo 2>/dev/null ||
 				grep -q "BCM" /proc/cpuinfo 2>/dev/null; then
 				echo "rpi"
 				return 0
 			fi
-			echo "ubuntu" # Debian-based, use Ubuntu config
+			echo "debian"  # Fallback to debian
 			return 0
 			;;
 		rhel | centos)
@@ -144,24 +171,55 @@ detect_os() {
 			echo "amazon"
 			return 0
 		fi
+		# Check for Solus
+		if grep -qi "solus" /etc/os-release 2>/dev/null; then
+			echo "solus"
+			return 0
+		fi
+		# Check for AlmaLinux
+		if grep -qi "almalinux" /etc/os-release 2>/dev/null; then
+			echo "almalinux"
+			return 0
+		fi
+		# Check for NixOS
+		if grep -qi "nixos" /etc/os-release 2>/dev/null; then
+			echo "nixos"
+			return 0
+		fi
+		# Check for Linux Mint
+		if grep -qi "linuxmint" /etc/os-release 2>/dev/null; then
+			echo "mint"
+			return 0
+		fi
 	elif [ -f /etc/redhat-release ]; then
+		# Check for AlmaLinux
+		if grep -qi "almalinux" /etc/redhat-release 2>/dev/null; then
+			echo "almalinux"
+			return 0
+		fi
 		echo "rocky" # RHEL-based
 		return 0
 	elif [ -f /etc/debian_version ]; then
-		# Check if Raspberry Pi
-		if grep -q "Raspberry Pi" /proc/cpuinfo 2>/dev/null; then
-			echo "rpi"
-			return 0
-		fi
-		echo "ubuntu" # Debian-based
+		# Not Raspberry Pi, so it's Debian
+		echo "debian"
 		return 0
 	fi
 
-	# Check for FreeBSD
-	if [ "$(uname)" = "FreeBSD" ]; then
+	# Check for BSD systems
+	case "$(uname)" in
+	FreeBSD)
 		echo "freebsd"
 		return 0
-	fi
+		;;
+	OpenBSD)
+		echo "openbsd"
+		return 0
+		;;
+	NetBSD)
+		echo "netbsd"
+		return 0
+		;;
+	esac
 
 	# Unable to detect
 	echo "unknown"
@@ -176,7 +234,7 @@ detect_os_version() {
 	macos)
 		sw_vers -productVersion
 		;;
-	fedora | ubuntu | arch | gentoo | void | oracle | rocky | alpine | opensuse | amazon | windows | freebsd)
+	fedora | ubuntu | debian | arch | gentoo | void | oracle | rocky | almalinux | alpine | opensuse | amazon | solus | mint | nixos | windows)
 		if [ -f /etc/os-release ]; then
 			. /etc/os-release
 			printf "%s" "$VERSION_ID"
@@ -233,7 +291,19 @@ is_debian_based() {
 is_rpm_based() {
 	os=$(detect_os)
 	case "$os" in
-	fedora | oracle | rocky | opensuse | amazon)
+	fedora | oracle | rocky | almalinux | opensuse | amazon)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+is_bsd() {
+	os=$(detect_os)
+	case "$os" in
+	freebsd | openbsd | netbsd)
 		return 0
 		;;
 	*)

@@ -125,7 +125,7 @@ install_python() {
 			return 1
 		fi
 		;;
-	fedora | oracle | rocky)
+	fedora | oracle | rocky | almalinux)
 		sudo dnf install -y python3 python3-pip
 		;;
 	amazon)
@@ -135,7 +135,7 @@ install_python() {
 			sudo dnf install -y python3 python3-pip
 		fi
 		;;
-	ubuntu | rpi)
+	ubuntu | debian | rpi | mint)
 		sudo apt update
 		sudo apt install -y python3 python3-pip
 		;;
@@ -144,6 +144,9 @@ install_python() {
 		;;
 	opensuse)
 		sudo zypper install -y python3 python3-pip
+		;;
+	solus)
+		sudo eopkg install -y python3 python3-pip
 		;;
 	void)
 		sudo xbps-install -Sy python3 python3-pip
@@ -156,6 +159,17 @@ install_python() {
 		;;
 	freebsd)
 		sudo pkg install -y python3
+		;;
+	openbsd)
+		sudo pkg_add python%python3
+		;;
+	netbsd)
+		sudo pkgin install python3
+		;;
+	nixos)
+		printf "%bPlease add Python to /etc/nixos/configuration.nix:%b\n" "$YELLOW" "$NC"
+		printf "  environment.systemPackages = [ python3 ]\n"
+		return 1
 		;;
 	windows)
 		printf "%bERROR: Please install Python 3 manually on Windows%b\n" "$RED" "$NC"
@@ -250,7 +264,7 @@ if [ "$SKIP_PYTHON_CHECK" != "--skip-python-check" ]; then
 		macos)
 			brew upgrade python@3
 			;;
-		fedora | oracle | rocky)
+		fedora | oracle | rocky | almalinux)
 			sudo dnf upgrade -y python3
 			;;
 		amazon)
@@ -260,7 +274,7 @@ if [ "$SKIP_PYTHON_CHECK" != "--skip-python-check" ]; then
 				sudo dnf upgrade -y python3
 			fi
 			;;
-		ubuntu | rpi)
+		ubuntu | debian | rpi | mint)
 			sudo apt update && sudo apt upgrade -y python3
 			;;
 		arch)
@@ -268,6 +282,12 @@ if [ "$SKIP_PYTHON_CHECK" != "--skip-python-check" ]; then
 			;;
 		opensuse)
 			sudo zypper update -y python3
+			;;
+		solus)
+			sudo eopkg upgrade python3
+			;;
+		freebsd | openbsd | netbsd | nixos | void | gentoo | alpine)
+			printf "%bPlease upgrade Python manually on %s%b\n" "$YELLOW" "$CURRENT_OS" "$NC"
 			;;
 		*)
 			printf "%bERROR: Please upgrade Python manually%b\n" "$RED" "$NC"

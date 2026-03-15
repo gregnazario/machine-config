@@ -61,7 +61,7 @@ install_packages() {
 			printf "${YELLOW}    ⚠ Homebrew not found, skipping packages${NC}\n"
 		fi
 		;;
-	fedora|oracle|rocky)
+	fedora|oracle|rocky|almalinux)
 		if command -v dnf >/dev/null 2>&1; then
 			sudo dnf install -y $packages 2>/dev/null || true
 		fi
@@ -73,7 +73,7 @@ install_packages() {
 			sudo dnf install -y $packages 2>/dev/null || true
 		fi
 		;;
-	ubuntu|rpi)
+	ubuntu|debian|rpi|mint)
 		if command -v apt >/dev/null 2>&1; then
 			sudo apt update -qq 2>/dev/null || true
 			sudo apt install -y $packages 2>/dev/null || true
@@ -87,6 +87,13 @@ install_packages() {
 	opensuse)
 		if command -v zypper >/dev/null 2>&1; then
 			sudo zypper install -y $packages 2>/dev/null || true
+		fi
+		;;
+	solus)
+		if command -v eopkg >/dev/null 2>&1; then
+			sudo eopkg install -y $packages 2>/dev/null || true
+		else
+			printf "${YELLOW}    ⚠ eopkg not found, skipping packages${NC}\n"
 		fi
 		;;
 	gentoo)
@@ -107,6 +114,32 @@ install_packages() {
 	freebsd)
 		if command -v pkg >/dev/null 2>&1; then
 			sudo pkg install -y $packages 2>/dev/null || true
+		fi
+		;;
+	openbsd)
+		if command -v pkg_add >/dev/null 2>&1; then
+			sudo pkg_add -I $packages 2>/dev/null || true
+		else
+			printf "${YELLOW}    ⚠ pkg_add not found, skipping packages${NC}\n"
+		fi
+		;;
+	netbsd)
+		if command -v pkgin >/dev/null 2>&1; then
+			sudo pkgin -y install $packages 2>/dev/null || true
+		else
+			printf "${YELLOW}    ⚠ pkgin not found. Install with: pkg_add pkgin${NC}\n"
+		fi
+		;;
+	nixos)
+		if command -v nix-env >/dev/null 2>&1; then
+			# NixOS is special - packages go in profile
+			for pkg in $packages; do
+				nix-env -iA nixos.$pkg 2>/dev/null || true
+			done
+		else
+			printf "${YELLOW}    ⚠ nix-env not found${NC}\n"
+			printf "    ${YELLOW}Add packages to /etc/nixos/configuration.nix:${NC}\n"
+			printf "    environment.systemPackages = [ $packages ];\n"
 		fi
 		;;
 	windows)
