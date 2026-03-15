@@ -614,7 +614,13 @@ def install_tools(selected_tools: Set[str], current_os: str, repo_root: Path, dr
 def install_category(category: str, current_os: str, repo_root: Path) -> bool:
     """Install configuration for a category."""
     script_dir = Path(__file__).parent
+
+    # Try category-specific installer first
     installer_script = script_dir / f"install-{category}.sh"
+
+    # Fall back to generic installer
+    if not installer_script.exists():
+        installer_script = script_dir / "install-category.sh"
 
     if not installer_script.exists():
         print(f"{Colors.YELLOW}  ⚠ No installer found for {category}{Colors.NC}")
@@ -623,18 +629,20 @@ def install_category(category: str, current_os: str, repo_root: Path) -> bool:
 
     try:
         result = subprocess.run(
-            ['sh', str(installer_script), current_os, str(repo_root)],
+            ['sh', str(installer_script), category, current_os, str(repo_root)],
             capture_output=True,
             text=True
         )
 
+        # Show output
+        if result.stdout:
+            print(result.stdout, end='')
+
         if result.returncode == 0:
-            print(f"{Colors.GREEN}  ✓ Successfully installed {category}{Colors.NC}")
             return True
         else:
-            print(f"{Colors.RED}  ✗ Failed to install {category}{Colors.NC}")
             if result.stderr:
-                print(f"  Error: {result.stderr.strip()}")
+                print(f"{Colors.RED}  Error: {result.stderr.strip()}{Colors.NC}")
             return False
 
     except Exception as e:
@@ -1698,29 +1706,6 @@ if HAS_CURSES:
 		def handle_input(self, event, screen_data):
 			"""Handle keyboard/mouse input"""
 			action = None
-
-			# Debug: log key events to file
-			try:
-				with open('/tmp/tui_keys.log', 'a') as f:
-					key_name = {
-						curses.KEY_UP: 'KEY_UP',
-						curses.KEY_DOWN: 'KEY_DOWN',
-						curses.KEY_LEFT: 'KEY_LEFT',
-						curses.KEY_RIGHT: 'KEY_RIGHT',
-						258: 'KEY_DOWN',  # Alternate code
-						259: 'KEY_UP',    # Alternate code
-						260: 'KEY_LEFT',  # Alternate code
-						261: 'KEY_RIGHT', # Alternate code
-						10: 'ENTER',
-						32: 'SPACE',
-						27: 'ESC',
-						127: 'BACKSPACE',
-						3: 'CTRL-C',
-						4: 'CTRL-D',
-					}.get(event, f'chr({event})={chr(event) if 32 <= event < 127 else "?"}' if event < 256 else str(event))
-					f.write(f"Key: {key_name:20s} Code: {event:4d}\n")
-			except:
-				pass
 
 			# Handle mouse
 			if event == curses.KEY_MOUSE:
