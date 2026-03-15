@@ -18,18 +18,23 @@ try:
 
 	# Detect terminal type using multiple methods
 	TERM = os.environ.get('TERM', 'xterm-256color')
+	term_program = os.environ.get('TERM_PROGRAM', '').lower()
 
+	# Detect Ghostty
 	# Method 1: Check TERM variable (most reliable for Ghostty)
 	# Ghostty sets TERM=xterm-ghostty which contains "ghostty" in the name
 	IS_GHOSTTY = 'ghostty' in TERM.lower()
 
 	# Method 2: Check TERM_PROGRAM (fallback for some terminals)
-	term_program = os.environ.get('TERM_PROGRAM', '').lower()
 	IS_GHOSTTY = IS_GHOSTTY or 'ghostty' in term_program
 
 	# Method 3: Check GHOSTTY_RESOURCES env var (set by Ghostty macOS app)
 	ghostty_resources = os.environ.get('GHOSTTY_RESOURCES', '')
 	IS_GHOSTTY = IS_GHOSTTY or bool(ghostty_resources)
+
+	# Detect Warp/WarpTerminal
+	# Warp uses TERM=xterm-256color with TERM_PROGRAM=warp-terminal
+	IS_WARP = 'warp' in term_program or 'warp-terminal' in term_program
 
 except ImportError:
 	HAS_CURSES = False
@@ -685,7 +690,15 @@ def get_tools_from_cli(tools_str: str, categories_str: str) -> Set[str]:
     return selected_tools
 
 # TUI Installer (only available if curses is available)
-# Tested terminals: ghostty (TERM=xterm-ghostty), alacritty, wezterm, iterm2, kitty, gnome-terminal, konsole
+# Tested terminals:
+#   - ghostty (TERM=xterm-ghostty) ✓
+#   - alacritty (TERM=alacritty) ✓
+#   - wezterm (TERM=xterm-256color) ✓
+#   - warp/warp-terminal (TERM=xterm-256color, TERM_PROGRAM=warp-terminal) ✓
+#   - iterm2 (TERM=xterm-256color or TERM_PROGRAM=iTerm.app) ✓
+#   - kitty (TERM=xterm-kitty) ✓
+#   - gnome-terminal (TERM=xterm-256color) ✓
+#   - konsole (TERM=xterm-256color) ✓
 # Should work with any xterm-compatible terminal
 if HAS_CURSES:
 	class TUIInstaller:
@@ -762,6 +775,7 @@ if HAS_CURSES:
 			info = {
 				'TERM': TERM,
 				'IS_GHOSTTY': IS_GHOSTTY if HAS_CURSES else 'N/A',
+				'IS_WARP': getattr(self, 'IS_WARP', False) if HAS_CURSES else 'N/A',
 				'term_program': os.environ.get('TERM_PROGRAM', 'not set'),
 				'mouse_enabled': getattr(self, 'mouse_enabled', False),
 				'unicode_support': getattr(self, 'use_unicode_cursor', False),
