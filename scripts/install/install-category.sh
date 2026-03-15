@@ -29,6 +29,13 @@ get_package() {
 	# Convert tool to uppercase for variable lookup
 	tool_upper=$(echo "$tool" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
 
+	# Special case: variables can't start with numbers in shell
+	# Map "1PASSWORD" to "ONEPASSWORD"
+	case "$tool_upper" in
+		1PASSWORD) tool_upper="ONEPASSWORD" ;;
+		1PASSWORD*) tool_upper="ONEPASSWORD${tool_upper#1PASSWORD}" ;;
+	esac
+
 	# Try to get package from database
 	if type get_package_name 2>/dev/null | grep -q 'function'; then
 		pkg=$(get_package_name "$tool_upper" "$os")
