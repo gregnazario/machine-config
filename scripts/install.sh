@@ -11,6 +11,55 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# Default values
+SKIP_PYTHON_CHECK=""
+AUTO_INSTALL_PYTHON=""
+
+# Parse arguments
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--help | -h)
+		printf "Usage: %s [OPTIONS]\n" "$0"
+		printf "\n"
+		printf "Options:\n"
+		printf "  --help, -h                Show this help message\n"
+		printf "  --profile <name>          Select installation profile (minimal, developer,\n"
+		printf "                            terminal-ninja, sysadmin, full)\n"
+		printf "  --tools <tool1,tool2>     Comma-separated list of tools to install\n"
+		printf "  --categories <cat1,cat2>   Comma-separated list of categories to install\n"
+		printf "  --yes, -y                 Auto-accept all prompts\n"
+		printf "  --dry-run                 Show what would be installed without installing\n"
+		printf "  --skip-python-check       Skip Python version check\n"
+		printf "  --no-python-install       Don't install Python automatically\n"
+		printf "\n"
+		printf "Profiles:\n"
+		printf "  minimal         Essential tools for everyday use (4 tools)\n"
+		printf "  developer       Full development environment (~20 tools)\n"
+		printf "  terminal-ninja  Terminal productivity focus (~25 tools)\n"
+		printf "  sysadmin        Server management tools (~15 tools)\n"
+		printf "  full            All available tools\n"
+		printf "\n"
+		printf "Examples:\n"
+		printf "  %s --profile minimal\n" "$0"
+		printf "  %s --tools zsh,neovim,git\n" "$0"
+		printf "  %s --categories shells,editors --yes\n" "$0"
+		exit 0
+		;;
+	--skip-python-check)
+		SKIP_PYTHON_CHECK="--skip-python-check"
+		shift
+		;;
+	--no-python-install)
+		AUTO_INSTALL_PYTHON="--no-python-install"
+		shift
+		;;
+	*)
+		# Pass all other arguments to Python installer
+		break
+		;;
+	esac
+done
+
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -123,54 +172,92 @@ if [ -z "$PYTHON_CMD" ]; then
 	printf "The interactive installer requires Python 3.6 or higher.\n"
 	printf "Detected OS: %b%s%b\n\n" "$GREEN" "$CURRENT_OS" "$NC"
 
-	# Try to install automatically
-	if install_python "$CURRENT_OS"; then
-		PYTHON_CMD="python3"
-	else
-		printf "\n%bERROR: Python 3 installation failed%b\n" "$RED" "$NC"
-		printf "\nPlease install Python 3 manually and run this script again.\n"
+	# Check if --no-python-install flag was given
+	if [ "$AUTO_INSTALL_PYTHON" = "--no-python-install" ]; then
+		printf "%b--no-python-install flag specified.%b\n" "$YELLOW" "$NC"
+		printf "Please install Python 3 manually and run this script again.\n\n"
+		printf "Installation instructions:\n"
+		printf "  macOS:   brew install python@3\n"
+		printf "  Fedora:  sudo dnf install python3\n"
+		printf "  Ubuntu:  sudo apt install python3\n"
+		printf "  Arch:    sudo pacman -S python\n"
 		exit 1
 	fi
+
+	printf "Python 3 is not installed. The installer can install it for you.\n\n"
+
+	# Ask for permission
+	while true; do
+		printf "%b→ Install Python 3 automatically? [y/N]: %b" "$YELLOW" "$NC"
+		read -r response
+		case "$response" in
+		[Yy] | [Yy][Ee][Ss])
+			# Try to install automatically
+			if install_python "$CURRENT_OS"; then
+				PYTHON_CMD="python3"
+			else
+				printf "\n%bERROR: Python 3 installation failed%b\n" "$RED" "$NC"
+				printf "\nPlease install Python 3 manually and run this script again.\n"
+				exit 1
+			fi
+			break
+			;;
+		[Nn] | [Nn][Oo] | "")
+			printf "\nPlease install Python 3 manually and run this script again.\n\n"
+			printf "Installation instructions:\n"
+			printf "  macOS:   brew install python@3\n"
+			printf "  Fedora:  sudo dnf install python3\n"
+			printf "  Ubuntu:  sudo apt install python3\n"
+			printf "  Arch:    sudo pacman -S python\n"
+			exit 0
+			;;
+		*)
+			printf "Please answer yes or no\n"
+			;;
+		esac
+	done
 fi
 
 # Check Python version (need 3.6+)
-PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | awk '{print $2}')
-PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
-PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
-
-if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 6 ]; }; then
-	printf "%bERROR: Python 3.6 or higher is required%b\n" "$RED" "$NC"
-	printf "You have Python %s\n" "$PYTHON_VERSION"
-	printf "\nAttempting to upgrade Python...\n"
-
-	# Try to upgrade
-	case "$CURRENT_OS" in
-	macos)
-		brew upgrade python@3
-		;;
-	fedora | oracle | rocky)
-		sudo dnf upgrade -y python3
-		;;
-	ubuntu | rpi)
-		sudo apt update && sudo apt upgrade -y python3
-		;;
-	arch)
-		sudo pacman -S --noconfirm python
-		;;
-	*)
-		printf "%bERROR: Please upgrade Python manually%b\n" "$RED" "$NC"
-		exit 1
-		;;
-	esac
-
-	# Recheck after upgrade attempt
+if [ "$SKIP_PYTHON_CHECK" != "--skip-python-check" ]; then
 	PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | awk '{print $2}')
 	PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
 	PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
 
 	if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 6 ]; }; then
-		printf "%bERROR: Still using Python %s. Please upgrade manually.%b\n" "$RED" "$PYTHON_VERSION" "$NC"
-		exit 1
+		printf "%bERROR: Python 3.6 or higher is required%b\n" "$RED" "$NC"
+		printf "You have Python %s\n" "$PYTHON_VERSION"
+		printf "\nAttempting to upgrade Python...\n"
+
+		# Try to upgrade
+		case "$CURRENT_OS" in
+		macos)
+			brew upgrade python@3
+			;;
+		fedora | oracle | rocky)
+			sudo dnf upgrade -y python3
+			;;
+		ubuntu | rpi)
+			sudo apt update && sudo apt upgrade -y python3
+			;;
+		arch)
+			sudo pacman -S --noconfirm python
+			;;
+		*)
+			printf "%bERROR: Please upgrade Python manually%b\n" "$RED" "$NC"
+			exit 1
+			;;
+		esac
+
+		# Recheck after upgrade attempt
+		PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | awk '{print $2}')
+		PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
+		PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+
+		if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 6 ]; }; then
+			printf "%bERROR: Still using Python %s. Please upgrade manually.%b\n" "$RED" "$PYTHON_VERSION" "$NC"
+			exit 1
+		fi
 	fi
 fi
 

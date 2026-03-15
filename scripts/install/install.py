@@ -4,11 +4,72 @@ Interactive installer for Greg's Dotfiles
 Detects OS and lets user choose which tools to configure
 """
 
+import argparse
 import os
 import sys
 import subprocess
 from pathlib import Path
 from typing import List, Dict, Set, Optional
+
+# Parse command-line arguments
+def parse_args():
+	parser = argparse.ArgumentParser(
+		description='Interactive installer for Greg\'s Dotfiles',
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		epilog='''
+Examples:
+  %(prog)s --profile minimal           Install minimal profile
+  %(prog)s --tools zsh,neovim,git       Install specific tools
+  %(prog)s --categories shells,editors Install entire categories
+  %(prog)s --profile developer --yes    Non-interactive installation
+  %(prog)s --dry-run                    Show what would be installed
+
+Profiles:
+  minimal         Essential tools for everyday use (4 tools)
+  developer       Full development environment (~20 tools)
+  terminal-ninja  Terminal productivity focus (~25 tools)
+  sysadmin        Server management tools (~15 tools)
+  full            All available tools
+
+For more information, see the README.
+		'''
+	)
+
+	parser.add_argument(
+		'--profile', '-p',
+		choices=['minimal', 'developer', 'terminal-ninja', 'sysadmin', 'full'],
+		help='Select installation profile'
+	)
+
+	parser.add_argument(
+		'--tools', '-t',
+		help='Comma-separated list of tools to install (e.g., zsh,neovim,git)'
+	)
+
+	parser.add_argument(
+		'--categories', '-c',
+		help='Comma-separated list of categories to install (e.g., shells,editors)'
+	)
+
+	parser.add_argument(
+		'--yes', '-y',
+		action='store_true',
+		help='Auto-accept all prompts (non-interactive mode)'
+	)
+
+	parser.add_argument(
+		'--dry-run',
+		action='store_true',
+		help='Show what would be installed without actually installing'
+	)
+
+	parser.add_argument(
+		'--skip-python-check',
+		action='store_true',
+		help=argparse.SUPPRESS  # For internal use by bootstrap script
+	)
+
+	return parser.parse_args()
 
 # ANSI color codes
 class Colors:
@@ -478,11 +539,16 @@ def confirm_install(selected_tools: Set[str], current_os: str) -> bool:
             print(f"\n{Colors.RED}Installation cancelled.{Colors.NC}")
             return False
 
-def install_tools(selected_tools: Set[str], current_os: str, repo_root: Path) -> Dict[str, bool]:
+def install_tools(selected_tools: Set[str], current_os: str, repo_root: Path, dry_run: bool = False) -> Dict[str, bool]:
     """Install all selected tools."""
-    print(f"\n{Colors.PURPLE}═══════════════════════════════════════════════════════════{Colors.NC}")
-    print(f"{Colors.PURPLE}  Installing Configurations{Colors.NC}")
-    print(f"{Colors.PURPLE}═══════════════════════════════════════════════════════════{Colors.NC}\n")
+    if dry_run:
+        print(f"\n{Colors.YELLOW}═══════════════════════════════════════════════════════════{Colors.NC}")
+        print(f"{Colors.YELLOW}  DRY RUN - No actual installation will occur{Colors.NC}")
+        print(f"{Colors.YELLOW}═══════════════════════════════════════════════════════════{Colors.NC}\n")
+    else:
+        print(f"\n{Colors.PURPLE}═══════════════════════════════════════════════════════════{Colors.NC}")
+        print(f"{Colors.PURPLE}  Installing Configurations{Colors.NC}")
+        print(f"{Colors.PURPLE}═══════════════════════════════════════════════════════════{Colors.NC}\n")
 
     # Group tools by category
     tools_by_category = {}
@@ -498,8 +564,14 @@ def install_tools(selected_tools: Set[str], current_os: str, repo_root: Path) ->
 
     for category in sorted(tools_by_category.keys()):
         print(f"\n{Colors.BLUE}→ {CATEGORIES[category]['description']}{Colors.NC}")
-        success = install_category(category, current_os, repo_root)
-        results[category] = success
+        if dry_run:
+            tools = sorted(tools_by_category[category])
+            for tool in tools:
+                print(f"  • {tool}")
+            results[category] = True  # Pretend success in dry-run
+        else:
+            success = install_category(category, current_os, repo_root)
+            results[category] = success
 
     return results
 
@@ -561,44 +633,107 @@ def print_summary(results: Dict[str, bool], total_tools: int):
         print(f"{Colors.YELLOW}Note: Some tools may require manual installation{Colors.NC}")
         print("      See individual tool READMEs for details\n")
 
+def get_tools_from_cli(tools_str: str, categories_str: str) -> Set[str]:
+    """Get tools from command-line arguments."""
+    selected_tools = set()
+
+    # Parse --tools argument
+    if tools_str:
+        tools_list = [t.strip() for t in tools_str.split(',')]
+        selected_tools.update(tools_list)
+
+    # Parse --categories argument
+    if categories_str:
+        categories_list = [c.strip() for c in categories_str.split(',')]
+        for category in categories_list:
+            if category in CATEGORIES:
+                selected_tools.update(CATEGORIES[category]['tools'])
+            else:
+                print(f"{Colors.YELLOW}Warning: Unknown category '{category}'{Colors.NC}")
+
+    return selected_tools
+
 def main():
     """Main installation flow."""
+    # Parse command-line arguments
+    args = parse_args()
+
     # Detect OS
     current_os = detect_os()
 
-    # Welcome
-    welcome(current_os)
+    # Determine if we're in non-interactive mode
+    non_interactive = args.profile or args.tools or args.categories
 
-    # Select profile
-    profile_key = select_profile()
+    # Select tools
+    selected_tools = None
 
-    # Get tools
-    if profile_key:
-        selected_tools = get_tools_from_profile(profile_key)
-        profile_name = PROFILES[profile_key]['name']
-        print(f"\n{Colors.GREEN}Selected profile: {profile_name}{Colors.NC}")
+    if args.profile:
+        # Profile specified via CLI
+        selected_tools = get_tools_from_profile(args.profile)
+        profile_name = PROFILES[args.profile]['name']
+        print(f"{Colors.GREEN}Selected profile: {profile_name}{Colors.NC}")
+    elif args.tools or args.categories:
+        # Tools/categories specified via CLI
+        selected_tools = get_tools_from_cli(args.tools or '', args.categories or '')
+        print(f"{Colors.GREEN}Selected {len(selected_tools)} tools from CLI arguments{Colors.NC}")
     else:
-        selected_tools = None
-        print(f"\n{Colors.GREEN}Custom tool selection{Colors.NC}")
+        # Interactive mode
+        print_header()
+        print_system_info(current_os)
 
-    # Select/customize tools
-    selected_tools = select_categories(selected_tools)
+        try:
+            input(f"{Colors.YELLOW}Press Enter to continue...{Colors.NC}")
+        except (EOFError, KeyboardInterrupt):
+            print()
+
+        # Select profile
+        profile_key = select_profile()
+
+        # Get tools
+        if profile_key:
+            selected_tools = get_tools_from_profile(profile_key)
+            profile_name = PROFILES[profile_key]['name']
+            print(f"\n{Colors.GREEN}Selected profile: {profile_name}{Colors.NC}")
+        else:
+            selected_tools = None
+            print(f"\n{Colors.GREEN}Custom tool selection{Colors.NC}")
+
+        # Select/customize tools
+        selected_tools = select_categories(selected_tools)
 
     if not selected_tools:
         print(f"{Colors.RED}No tools selected. Exiting.{Colors.NC}")
         sys.exit(1)
 
-    # Confirm installation
-    if not confirm_install(selected_tools, current_os):
-        print(f"{Colors.RED}Installation cancelled.{Colors.NC}")
-        sys.exit(0)
+    # Confirm installation (skip if --yes or non-interactive with --profile)
+    if args.yes or (non_interactive and args.profile):
+        # Auto-confirm in non-interactive mode
+        pass
+    elif non_interactive:
+        # Still confirm if tools/categories specified
+        print(f"\n{Colors.BOLD}Summary of selections:{Colors.NC}\n")
+        print(f"  Total tools: {Colors.GREEN}{len(selected_tools)}{Colors.NC}")
+        if not args.yes:
+            # Still need confirmation for explicit tool selection
+            print(f"\n{Colors.YELLOW}Use --yes to auto-confirm{Colors.NC}")
+            if not confirm_install(selected_tools, current_os):
+                print(f"{Colors.RED}Installation cancelled.{Colors.NC}")
+                sys.exit(0)
+    else:
+        # Interactive confirmation
+        if not confirm_install(selected_tools, current_os):
+            print(f"{Colors.RED}Installation cancelled.{Colors.NC}")
+            sys.exit(0)
 
     # Install tools
     repo_root = Path(__file__).parent.parent.parent
-    results = install_tools(selected_tools, current_os, repo_root)
+    results = install_tools(selected_tools, current_os, repo_root, dry_run=args.dry_run)
 
     # Print summary
-    print_summary(results, len(selected_tools))
+    if args.dry_run:
+        print(f"\n{Colors.YELLOW}Dry run complete. No actual installation occurred.{Colors.NC}")
+    else:
+        print_summary(results, len(selected_tools))
 
 if __name__ == '__main__':
     try:
