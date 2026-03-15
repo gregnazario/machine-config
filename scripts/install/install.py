@@ -19,14 +19,15 @@ try:
 	# Detect terminal type using multiple methods
 	TERM = os.environ.get('TERM', 'xterm-256color')
 
-	# Method 1: Check TERM variable
+	# Method 1: Check TERM variable (most reliable for Ghostty)
+	# Ghostty sets TERM=xterm-ghostty which contains "ghostty" in the name
 	IS_GHOSTTY = 'ghostty' in TERM.lower()
 
-	# Method 2: Check TERM_PROGRAM (set by some terminals)
+	# Method 2: Check TERM_PROGRAM (fallback for some terminals)
 	term_program = os.environ.get('TERM_PROGRAM', '').lower()
 	IS_GHOSTTY = IS_GHOSTTY or 'ghostty' in term_program
 
-	# Method 3: Check GHOSTTY_RESOURCES env var (set by Ghostty app)
+	# Method 3: Check GHOSTTY_RESOURCES env var (set by Ghostty macOS app)
 	ghostty_resources = os.environ.get('GHOSTTY_RESOURCES', '')
 	IS_GHOSTTY = IS_GHOSTTY or bool(ghostty_resources)
 
@@ -684,7 +685,7 @@ def get_tools_from_cli(tools_str: str, categories_str: str) -> Set[str]:
     return selected_tools
 
 # TUI Installer (only available if curses is available)
-# Tested terminals: ghostty, alacritty, wezterm, iterm2, kitty, gnome-terminal, konsole
+# Tested terminals: ghostty (TERM=xterm-ghostty), alacritty, wezterm, iterm2, kitty, gnome-terminal, konsole
 # Should work with any xterm-compatible terminal
 if HAS_CURSES:
 	class TUIInstaller:
