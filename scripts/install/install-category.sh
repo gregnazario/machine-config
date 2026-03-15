@@ -97,6 +97,14 @@ install_packages() {
 			sudo pkg install -y $packages 2>/dev/null || true
 		fi
 		;;
+	windows)
+		if command -v choco >/dev/null 2>&1; then
+			choco install -y $packages 2>/dev/null || true
+		else
+			printf "${YELLOW}    ⚠ Chocolatey not found. Install from: https://chocolatey.org/${NC}\n"
+			printf "    Then run: choco install ${packages}\n"
+		fi
+		;;
 	*)
 		printf "${YELLOW}    ⚠ Unknown OS: ${os}, skipping packages${NC}\n"
 		;;
