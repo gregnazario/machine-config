@@ -1456,7 +1456,7 @@ if HAS_CURSES:
 
 			# Set max items for navigation
 			self.max_items = len(profiles_with_custom)
-			self.cursor_pos = 0  # Reset cursor
+			# Don't reset cursor_pos - preserve it for navigation
 
 			self.profile_buttons = []
 
@@ -1518,7 +1518,7 @@ if HAS_CURSES:
 
 			# Set max items for navigation
 			self.max_items = len(self.categories_list)
-			self.cursor_pos = 0  # Reset cursor
+			# Don't reset cursor_pos - preserve it for navigation
 
 			self.category_buttons = []
 
@@ -1590,7 +1590,7 @@ if HAS_CURSES:
 
 			# Set max items for navigation
 			self.max_items = len(tools)
-			self.cursor_pos = 0  # Reset cursor
+			# Don't reset cursor_pos - preserve it for navigation
 
 			self.tool_buttons = []
 
