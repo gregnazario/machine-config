@@ -30,6 +30,17 @@ try:
 	TERM = os.environ.get('TERM', 'xterm-256color')
 	term_program = os.environ.get('TERM_PROGRAM', '').lower()
 
+	# Get friendly terminal name for display
+	TERM_FRIENDLY = TERM
+	if 'ghostty' in TERM.lower() or 'ghostty' in term_program:
+		TERM_FRIENDLY = 'Ghostty'
+	elif 'kitty' in TERM.lower() or 'kitty' in term_program:
+		TERM_FRIENDLY = 'Kitty'
+	elif 'warp' in term_program or 'warp-terminal' in term_program:
+		TERM_FRIENDLY = 'Warp'
+	elif TERM == 'xterm-256color':
+		TERM_FRIENDLY = 'xterm-256color'
+
 	# Detect Ghostty
 	# Method 1: Check TERM variable (most reliable for Ghostty)
 	# Ghostty sets TERM=xterm-ghostty which contains "ghostty" in the name
@@ -43,7 +54,7 @@ try:
 	IS_GHOSTTY = IS_GHOSTTY or bool(ghostty_resources)
 
 	# Detect Warp/WarpTerminal
-	# Warp uses TERM=xterm-256color with TERM_PROGRAM=warp-terminal
+	# Warp uses TERM=xterm-256color with TERM_PROGRAM=WarpTerminal
 	IS_WARP = 'warp' in term_program or 'warp-terminal' in term_program
 
 except ImportError:
@@ -907,7 +918,7 @@ if HAS_CURSES:
 
 			welcome_text = [
 				f"Detected OS: {self.current_os.capitalize()}",
-				f"Terminal: {TERM}",
+				f"Terminal: {TERM_FRIENDLY}",
 				f"Version: {get_version()}",
 				"",
 				"Welcome to the interactive dotfiles installer!",
