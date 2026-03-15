@@ -1722,6 +1722,25 @@ if HAS_CURSES:
 			elif event == ord('q') or event == ord('Q'):
 				return 'quit'
 
+			# Arrow keys for navigation
+			elif event == curses.KEY_UP:
+				self.cursor_pos = max(0, self.cursor_pos - 1)
+				return 'refresh'  # Signal to redraw
+
+			elif event == curses.KEY_DOWN:
+				self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
+				return 'refresh'  # Signal to redraw
+
+			# Space to toggle checkboxes
+			elif event == ord(' '):
+				if self.current_screen == 'tools':
+					category = screen_data.get('category', '')
+					tools = CATEGORIES[category]['tools']
+					if 0 <= self.cursor_pos < len(tools):
+						tool = tools[self.cursor_pos]
+						action = f'toggle_{tool}'
+
+			# Enter key
 			elif event == curses.KEY_ENTER or event == 10 or event == 13:
 				if self.current_screen == 'welcome':
 					action = 'next'
@@ -1759,6 +1778,14 @@ if HAS_CURSES:
 				action = self.handle_input(event, screen_data)
 
 				# Handle action
+				if action is None:
+					# Unrecognized key, ignore
+					continue
+
+				elif action == 'refresh':
+					# Arrow key navigation, just redraw
+					continue
+
 				if action == 'quit':
 					return None
 
