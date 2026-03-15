@@ -721,7 +721,7 @@ if HAS_CURSES:
 			# Set up curses
 			curses.curs_set(0)  # Hide cursor
 			curses.noecho()
-			curses.raw()  # Raw mode for better input handling
+			curses.cbreak()  # Cbreak mode allows signals (Ctrl-C, Ctrl-D, etc.)
 			self.stdscr.keypad(1)
 
 			# Try to enable mouse (may fail in some terminals)
@@ -1454,6 +1454,10 @@ if HAS_CURSES:
 			profile_list = list(PROFILES.keys())
 			profiles_with_custom = profile_list + ['custom']
 
+			# Set max items for navigation
+			self.max_items = len(profiles_with_custom)
+			self.cursor_pos = 0  # Reset cursor
+
 			self.profile_buttons = []
 
 			for idx, profile_key in enumerate(profiles_with_custom):
@@ -1466,6 +1470,16 @@ if HAS_CURSES:
 					profile = PROFILES[profile_key]
 					name = profile['name']
 					desc = profile['description']
+
+				# Draw cursor if on this item
+				is_cursor = (idx == self.cursor_pos)
+
+				if is_cursor:
+					cursor = self._get_cursor_char()
+					try:
+						self.stdscr.addstr(button_y, 4, cursor, self.HIGHLIGHT_BOLD)
+					except curses.error:
+						pass
 
 				try:
 					self.stdscr.addstr(button_y, 6, name, self.CYAN | curses.A_BOLD)
@@ -1485,7 +1499,7 @@ if HAS_CURSES:
 			for idx in range(min(len(profiles_with_custom), 6)):
 				self.draw_button(button_y, 6 + idx * 18, str(idx + 1), idx == 0)
 
-			self.draw_footer("1-6: Select profile | q: Quit")
+			self.draw_footer("↑/↓ or j/k: Navigate | Enter: Select | q: Quit")
 			return {'screen': 'profiles', 'profiles': profiles_with_custom}
 
 		def screen_categories(self):
@@ -1502,6 +1516,10 @@ if HAS_CURSES:
 				pass
 			line += 2
 
+			# Set max items for navigation
+			self.max_items = len(self.categories_list)
+			self.cursor_pos = 0  # Reset cursor
+
 			self.category_buttons = []
 
 			for idx, category in enumerate(self.categories_list):
@@ -1510,6 +1528,15 @@ if HAS_CURSES:
 				tools = CATEGORIES[category]['tools']
 				selected = sum(1 for t in tools if t in self.selected_tools)
 				total = len(tools)
+
+				# Draw cursor if on this item
+				is_cursor = (idx == self.cursor_pos)
+				if is_cursor:
+					cursor = self._get_cursor_char()
+					try:
+						self.stdscr.addstr(cat_y, 4, cursor, self.HIGHLIGHT_BOLD)
+					except curses.error:
+						pass
 
 				# Selection status
 				if selected == total:
@@ -1561,6 +1588,10 @@ if HAS_CURSES:
 				pass
 			line += 2
 
+			# Set max items for navigation
+			self.max_items = len(tools)
+			self.cursor_pos = 0  # Reset cursor
+
 			self.tool_buttons = []
 
 			# Two columns
@@ -1573,6 +1604,15 @@ if HAS_CURSES:
 				is_selected = tool in self.tool_selections[category]
 				status = "[✓]" if is_selected else "[ ]"
 				color = self.GREEN if is_selected else self.CYAN
+
+				# Draw cursor if on this item
+				is_cursor = (idx == self.cursor_pos)
+				if is_cursor:
+					cursor = self._get_cursor_char()
+					try:
+						self.stdscr.addstr(y, x - 2, cursor, self.HIGHLIGHT_BOLD)
+					except curses.error:
+						pass
 
 				try:
 					self.stdscr.addstr(y, x, status, color | curses.A_BOLD)
@@ -1594,7 +1634,7 @@ if HAS_CURSES:
 			self.draw_button(button_y, 22, "None")
 			self.draw_button(button_y, 36, "Done", True)
 
-			self.draw_footer("Click tool to toggle | Done when finished | q: Quit")
+			self.draw_footer("↑/↓ or j/k: Navigate | Space: Toggle | Enter: Done | q: Quit")
 			return {'screen': 'tools', 'category': category, 'button_y': button_y}
 
 		def screen_confirm(self):
@@ -1722,13 +1762,32 @@ if HAS_CURSES:
 			elif event == ord('q') or event == ord('Q'):
 				return 'quit'
 
+			# Ctrl-C or Ctrl-D to quit
+			elif event == 3:  # Ctrl-C
+				return 'quit'
+			elif event == 4:  # Ctrl-D
+				return 'quit'
+
+			# Vim keys for navigation
+			elif event == ord('k') or event == ord('K'):
+				# Vim up
+				self.cursor_pos = max(0, self.cursor_pos - 1)
+				return 'refresh'
+
+			elif event == ord('j') or event == ord('J'):
+				# Vim down
+				if self.max_items > 0:
+					self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
+				return 'refresh'
+
 			# Arrow keys for navigation
 			elif event == curses.KEY_UP:
 				self.cursor_pos = max(0, self.cursor_pos - 1)
 				return 'refresh'  # Signal to redraw
 
 			elif event == curses.KEY_DOWN:
-				self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
+				if self.max_items > 0:
+					self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
 				return 'refresh'  # Signal to redraw
 
 			# Space to toggle checkboxes
@@ -1740,12 +1799,21 @@ if HAS_CURSES:
 						tool = tools[self.cursor_pos]
 						action = f'toggle_{tool}'
 
-			# Enter key
+			# Enter key - activate highlighted item or button
 			elif event == curses.KEY_ENTER or event == 10 or event == 13:
 				if self.current_screen == 'welcome':
 					action = 'next'
+				elif self.current_screen == 'profiles':
+					# Activate the highlighted profile
+					profiles = screen_data.get('profiles', [])
+					if 0 <= self.cursor_pos < len(profiles):
+						profile_key = profiles[self.cursor_pos]
+						action = f'profile_{profile_key}'
 				elif self.current_screen == 'categories':
-					action = 'accept'
+					# Activate the highlighted category
+					if 0 <= self.cursor_pos < len(self.categories_list):
+						category = self.categories_list[self.cursor_pos]
+						action = f'category_{category}'
 				elif self.current_screen == 'tools':
 					action = 'done'
 				elif self.current_screen == 'confirm':
