@@ -128,12 +128,22 @@ install_python() {
 	fedora | oracle | rocky)
 		sudo dnf install -y python3 python3-pip
 		;;
+	amazon)
+		if command -v yum >/dev/null 2>&1; then
+			sudo yum install -y python3 python3-pip
+		elif command -v dnf >/dev/null 2>&1; then
+			sudo dnf install -y python3 python3-pip
+		fi
+		;;
 	ubuntu | rpi)
 		sudo apt update
 		sudo apt install -y python3 python3-pip
 		;;
 	arch)
 		sudo pacman -S --noconfirm python python-pip
+		;;
+	opensuse)
+		sudo zypper install -y python3 python3-pip
 		;;
 	void)
 		sudo xbps-install -Sy python3 python3-pip
@@ -243,11 +253,21 @@ if [ "$SKIP_PYTHON_CHECK" != "--skip-python-check" ]; then
 		fedora | oracle | rocky)
 			sudo dnf upgrade -y python3
 			;;
+		amazon)
+			if command -v yum >/dev/null 2>&1; then
+				sudo yum upgrade -y python3
+			elif command -v dnf >/dev/null 2>&1; then
+				sudo dnf upgrade -y python3
+			fi
+			;;
 		ubuntu | rpi)
 			sudo apt update && sudo apt upgrade -y python3
 			;;
 		arch)
 			sudo pacman -S --noconfirm python
+			;;
+		opensuse)
+			sudo zypper update -y python3
 			;;
 		*)
 			printf "%bERROR: Please upgrade Python manually%b\n" "$RED" "$NC"

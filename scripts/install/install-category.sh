@@ -66,6 +66,13 @@ install_packages() {
 			sudo dnf install -y $packages 2>/dev/null || true
 		fi
 		;;
+	amazon)
+		if command -v yum >/dev/null 2>&1; then
+			sudo yum install -y $packages 2>/dev/null || true
+		elif command -v dnf >/dev/null 2>&1; then
+			sudo dnf install -y $packages 2>/dev/null || true
+		fi
+		;;
 	ubuntu|rpi)
 		if command -v apt >/dev/null 2>&1; then
 			sudo apt update -qq 2>/dev/null || true
@@ -75,6 +82,11 @@ install_packages() {
 	arch)
 		if command -v pacman >/dev/null 2>&1; then
 			sudo pacman -S --noconfirm --needed $packages 2>/dev/null || true
+		fi
+		;;
+	opensuse)
+		if command -v zypper >/dev/null 2>&1; then
+			sudo zypper install -y $packages 2>/dev/null || true
 		fi
 		;;
 	gentoo)

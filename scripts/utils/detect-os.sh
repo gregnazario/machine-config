@@ -14,6 +14,8 @@
 # - oracle: Oracle Linux
 # - rocky: Rocky Linux
 # - alpine: Alpine Linux
+# - opensuse: openSUSE Leap/Tumbleweed
+# - amazon: Amazon Linux 2023
 # - windows: Windows 11 (WSL or native via MSYS2/Git Bash)
 # - freebsd: FreeBSD
 # - unknown: Unable to detect
@@ -78,6 +80,14 @@ detect_os() {
 			echo "alpine"
 			return 0
 			;;
+		opensuse*)
+			echo "opensuse"
+			return 0
+			;;
+		amzn)
+			echo "amazon"
+			return 0
+			;;
 		debian | raspbian)
 			# Check if Raspberry Pi
 			if grep -q "Raspberry Pi" /proc/cpuinfo 2>/dev/null ||
@@ -123,6 +133,17 @@ detect_os() {
 	elif [ -f /etc/alpine-release ]; then
 		echo "alpine"
 		return 0
+	elif [ -f /etc/os-release ]; then
+		# Check for openSUSE
+		if grep -qi "opensuse" /etc/os-release 2>/dev/null; then
+			echo "opensuse"
+			return 0
+		fi
+		# Check for Amazon Linux
+		if grep -qi "amazon" /etc/os-release 2>/dev/null; then
+			echo "amazon"
+			return 0
+		fi
 	elif [ -f /etc/redhat-release ]; then
 		echo "rocky" # RHEL-based
 		return 0
@@ -155,7 +176,7 @@ detect_os_version() {
 	macos)
 		sw_vers -productVersion
 		;;
-	fedora | ubuntu | arch | gentoo | void | oracle | rocky | alpine | windows | freebsd)
+	fedora | ubuntu | arch | gentoo | void | oracle | rocky | alpine | opensuse | amazon | windows | freebsd)
 		if [ -f /etc/os-release ]; then
 			. /etc/os-release
 			printf "%s" "$VERSION_ID"
@@ -212,7 +233,7 @@ is_debian_based() {
 is_rpm_based() {
 	os=$(detect_os)
 	case "$os" in
-	fedora | oracle | rocky)
+	fedora | oracle | rocky | opensuse | amazon)
 		return 0
 		;;
 	*)
