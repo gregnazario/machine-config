@@ -1699,6 +1699,34 @@ if HAS_CURSES:
 			"""Handle keyboard/mouse input"""
 			action = None
 
+			# Debug: log key events (temporary)
+			if event != -1:  # -1 is timeout/none
+				try:
+					# Try to show the key code in the status line
+					height, width = self.stdscr.getmaxyx()
+					key_name = {
+						curses.KEY_UP: 'KEY_UP',
+						curses.KEY_DOWN: 'KEY_DOWN',
+						curses.KEY_LEFT: 'KEY_LEFT',
+						curses.KEY_RIGHT: 'KEY_RIGHT',
+						258: 'KEY_DOWN',  # Alternate code
+						259: 'KEY_UP',    # Alternate code
+						260: 'KEY_LEFT',  # Alternate code
+						261: 'KEY_RIGHT', # Alternate code
+						10: 'ENTER',
+						32: 'SPACE',
+						27: 'ESC',
+						127: 'BACKSPACE',
+						3: 'CTRL-C',
+						4: 'CTRL-D',
+					}.get(event, f'chr({event})' if event < 256 else str(event))
+					try:
+						self.stdscr.addstr(height - 2, 2, f"Key: {key_name:15s} Code: {event:4d} ", self.BLUE)
+					except curses.error:
+						pass
+				except:
+					pass
+
 			# Handle mouse
 			if event == curses.KEY_MOUSE:
 				try:
@@ -1768,7 +1796,7 @@ if HAS_CURSES:
 			elif event == 4:  # Ctrl-D
 				return 'quit'
 
-			# Vim keys for navigation
+			# Vim keys for navigation (hjkl)
 			elif event == ord('k') or event == ord('K'):
 				# Vim up
 				self.cursor_pos = max(0, self.cursor_pos - 1)
@@ -1780,12 +1808,38 @@ if HAS_CURSES:
 					self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
 				return 'refresh'
 
+			elif event == ord('h') or event == ord('H'):
+				# Vim left (go back)
+				if self.current_screen == 'tools':
+					action = 'back'
+					return action
+				elif self.current_screen == 'categories':
+					action = 'back'
+					return action
+
+			elif event == ord('l') or event == ord('L'):
+				# Vim right (enter/accept)
+				if self.current_screen == 'profiles':
+					profiles = screen_data.get('profiles', [])
+					if 0 <= self.cursor_pos < len(profiles):
+						profile_key = profiles[self.cursor_pos]
+						action = f'profile_{profile_key}'
+						return action
+				elif self.current_screen == 'categories':
+					if 0 <= self.cursor_pos < len(self.categories_list):
+						category = self.categories_list[self.cursor_pos]
+						action = f'category_{category}'
+						return action
+				elif self.current_screen == 'tools':
+					action = 'done'
+					return action
+
 			# Arrow keys for navigation
-			elif event == curses.KEY_UP:
+			elif event == curses.KEY_UP or event == 259 or event == 565:
 				self.cursor_pos = max(0, self.cursor_pos - 1)
 				return 'refresh'  # Signal to redraw
 
-			elif event == curses.KEY_DOWN:
+			elif event == curses.KEY_DOWN or event == 258 or event == 524:
 				if self.max_items > 0:
 					self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
 				return 'refresh'  # Signal to redraw
