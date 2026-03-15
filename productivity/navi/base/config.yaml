@@ -1,0 +1,67 @@
+# Navi Configuration
+# Interactive cheatsheets for the command line
+
+# === Files ===
+
+# Directories to search for cheatsheets
+files:
+  # Custom cheatsheets directory
+  - ~/.config/navi/cheats
+  # Example cheatsheets (built-in)
+  - /usr/share/navi/cheats
+
+# === Finder ===
+
+# Finder settings (fzf/sk)
+finder:
+  # FZF-specific options
+  fzf:
+    # Override FZF_DEFAULT_OPTS
+    overrides: --height 80% --layout reverse --border
+
+# === Shell ===
+
+# Shell integration
+shell:
+  # Command to use for shell commands
+  command: bash
+
+# === UI ===
+
+# UI settings
+style:
+  # Tag style
+  tag:
+    color: cyan
+    width: 30
+    bold: true
+
+  # Comment style
+  comment:
+    color: gray
+    width: 60
+
+  # Snippet style
+  snippet:
+    color: white
+
+# === Behavior ===
+
+# Behavior settings
+behavior:
+  # Auto-insert snippets
+  auto_insert: false
+
+  # Print output instead of executing
+  dry_run: false
+
+# === Search ===
+
+# Search settings
+search:
+  # Search order
+  # Options: tag, comment, snippet
+  order:
+    - tag
+    - comment
+    - snippet

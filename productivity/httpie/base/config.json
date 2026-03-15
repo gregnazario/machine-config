@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "version": "2.0.0"
+  },
+  "default_options": {
+    "verify": false,
+    "follow": false,
+    "body": false,
+    "download": false,
+    "continue": false,
+    "traceback": false,
+    "debug": false,
+    "verbose": false,
+    "headers": false,
+    "form": false,
+    "json": false,
+    "multipart": false,
+    "timeout": 30,
+    "check_status": false,
+    "auth": null,
+    "auth_type": null,
+    "proxy": null,
+    "verify": true,
+    "offline": false,
+    "redirect": true,
+    "style": "auto"
+  }
+}

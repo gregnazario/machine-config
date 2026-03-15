@@ -1,0 +1,132 @@
+# Ghostty Configuration
+# Modern, fast terminal emulator
+
+# === Font ===
+
+# Font family
+font-family = JetBrains Mono
+
+# Font size
+font-size = 11
+
+# Font ligatures
+font-feature = +calt -zero
+
+# === Colors ===
+
+# Color scheme (Dracula)
+background = 282a36
+foreground = f8f8f2
+
+# Cursor colors
+cursor-background = f8f8f2
+cursor-foreground = 282a36
+
+# Selection colors
+selection-background = 44475a
+selection-foreground = f8f8f2
+
+# Palette (Dracula)
+palette = 0=#21222c
+palette = 1=#ff5555
+palette = 2=#50fa7b
+palette = 3=#f1fa8c
+palette = 4=#bd93f9
+palette = 5=#ff79c6
+palette = 6=#8be9fd
+palette = 7=#f8f8f2
+palette = 8=#6272a4
+palette = 9=#ff6e6e
+palette = 10=#69ff94
+palette = 11=#ffffa5
+palette = 12=#d6acff
+palette = 13=#ff92df
+palette = 14=#a4ffff
+palette = 15=#ffffff
+
+# === Window ===
+
+# Padding
+padding = 2
+
+# Window decorations
+window-decoration = true
+
+# Window theme (dark/light)
+theme = dark
+
+# Window opacity
+window-opacity = 0.95
+
+# Window dimensions
+# window-width = 120
+# window-height = 40
+
+# === Scrollback ===
+
+# Scrollback buffer size (lines)
+scrollback-limit = 10000
+
+# === Behavior ===
+
+# Confirm close
+confirm-close-surface = false
+
+# Copy on select
+copy-on-select = false
+
+# === Shell ===
+
+# Default shell (uses system default if commented)
+# command = /bin/bash
+
+# === Cursor ===
+
+# Cursor style
+# Options: block, underline, bar
+cursor-style = block
+
+# Cursor style blink
+cursor-style-blink = false
+
+# === Bell ===
+
+# Visual bell
+visual-bell = true
+
+# Audible bell
+audible-bell = false
+
+# === Mouse ===
+
+# Hide mouse when typing
+mouse-hide-while-typing = true
+
+# === Keybindings ===
+
+# Toggle fullscreen (macOS)
+# macos-option-as-alt = true
+
+# Keybindings (similar to wezterm/tmux)
+keybind = ctrl+shift+h=split:left
+keybind = ctrl+shift+v=split:bottom
+keybind = ctrl+shift+w=close_surface
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+q=close_tab
+
+# Clipboard
+keybind = ctrl+shift+c=copy_to_clipboard
+keybind = ctrl+shift+v=paste_from_clipboard
+
+# Font size
+keybind = ctrl+shift+equal=increase_font_size:1
+keybind = ctrl+shift+minus=decrease_font_size:1
+keybind = ctrl+shift+0=reset_font_size
+
+# === Misc ===
+
+# ANSI accented colors (bold/bright)
+accents = true
+
+# Term
+term = xterm-256color
