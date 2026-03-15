@@ -677,6 +677,10 @@ if HAS_CURSES:
 			self.categories_list = list(CATEGORIES.keys())
 			self.tool_selections = {}  # category -> set of selected tools
 
+			# Navigation state
+			self.cursor_pos = 0  # Current highlighted item
+			self.max_items = 1   # Number of items on current screen
+
 			# Initialize tool selections (all unselected)
 			for category in CATEGORIES:
 				self.tool_selections[category] = set()
@@ -685,6 +689,7 @@ if HAS_CURSES:
 			curses.curs_set(0)  # Hide cursor
 			curses.noecho()
 			self.stdscr.keypad(1)
+			curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
 
 			# Initialize colors
 			curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
@@ -694,6 +699,7 @@ if HAS_CURSES:
 			curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
 			curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE)
 			curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_CYAN)
+			curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
 			self.CYAN = curses.color_pair(1) | curses.A_BOLD
 			self.GREEN = curses.color_pair(2) | curses.A_BOLD
@@ -702,6 +708,8 @@ if HAS_CURSES:
 			self.MAGENTA = curses.color_pair(5) | curses.A_BOLD
 			self.SELECTED = curses.color_pair(6)
 			self.SELECTED_CYAN = curses.color_pair(7)
+			self.HIGHLIGHT = curses.color_pair(8)
+			self.HIGHLIGHT_BOLD = curses.color_pair(8) | curses.A_BOLD | curses.A_UNDERLINE
 
 		def clear_screen(self):
 			"""Clear the screen"""
@@ -727,9 +735,11 @@ if HAS_CURSES:
 			except curses.error:
 				pass
 
-		def draw_button(self, y: int, x: int, text: str, selected: bool = False):
+		def draw_button(self, y: int, x: int, text: str, selected: bool = False, is_cursor: bool = False):
 			"""Draw a clickable button"""
-			if selected:
+			if is_cursor:
+				color = self.HIGHLIGHT_BOLD
+			elif selected:
 				color = self.SELECTED
 			else:
 				color = self.CYAN
@@ -742,9 +752,40 @@ if HAS_CURSES:
 
 			return len(button_text)
 
+		def draw_list_item(self, y: int, x: int, text: str, is_cursor: bool = False):
+			"""Draw a list item with optional cursor highlight"""
+			if is_cursor:
+				try:
+					self.stdscr.addstr(y, x, f"► {text}", self.HIGHLIGHT_BOLD)
+				except curses.error:
+					pass
+			else:
+				try:
+					self.stdscr.addstr(y, x + 2, f"  {text}", self.CYAN)
+				except curses.error:
+					pass
+
+		def draw_checkbox(self, y: int, x: int, text: str, checked: bool, is_cursor: bool = False):
+			"""Draw a checkbox item"""
+			if is_cursor:
+				color = self.HIGHLIGHT_BOLD
+				prefix = "► "
+			else:
+				color = self.CYAN
+				prefix = "  "
+
+			box = "[✓]" if checked else "[ ]"
+			try:
+				self.stdscr.addstr(y, x, f"{prefix}{box} {text}", color)
+			except curses.error:
+				pass
+
 		def screen_welcome(self):
 			"""Welcome screen"""
 			self.current_screen = 'welcome'
+			self.cursor_pos = 0
+			self.max_items = 1  # Only Start button
+
 			self.clear_screen()
 
 			line = self.draw_header("Greg's Dotfiles Installer - TUI Mode")
@@ -766,6 +807,536 @@ if HAS_CURSES:
 			]
 
 			for text in welcome_text:
+				try:
+					color = self.GREEN if "Detected OS" in text else self.CYAN
+					self.stdscr.addstr(line, 4, text, color)
+				except curses.error:
+					pass
+				line += 1
+
+			# Draw button
+			line += 2
+			self.draw_button(line, 4, "Start", is_cursor=(self.cursor_pos == 0))
+
+			self.draw_footer("↑↓: Navigate | Enter: Start | q: Quit")
+			return line
+
+		def screen_profiles(self):
+			"""Profile selection screen"""
+			self.current_screen = 'profiles'
+			self.clear_screen()
+
+			line = self.draw_header("Select Installation Profile")
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Choose a profile:", self.CYAN)
+			except curses.error:
+				pass
+			line += 2
+
+			profile_list = list(PROFILES.keys())
+			profiles_with_custom = profile_list + ['custom']
+
+			# Reset cursor if out of bounds
+			if self.cursor_pos >= len(profiles_with_custom):
+				self.cursor_pos = 0
+			self.max_items = len(profiles_with_custom)
+
+			self.profile_buttons = []
+
+			for idx, profile_key in enumerate(profiles_with_custom):
+				button_y = line + idx * 2
+
+				if profile_key == 'custom':
+					name = "Custom"
+					desc = "Choose specific tools manually"
+				else:
+					profile = PROFILES[profile_key]
+					name = profile['name']
+					desc = profile['description']
+
+				# Draw highlighted or normal
+				if idx == self.cursor_pos:
+					try:
+						self.stdscr.addstr(button_y, 8, f"► {name}", self.HIGHLIGHT_BOLD)
+						self.stdscr.addstr(button_y + 1, 10, desc, self.GREEN)
+					except curses.error:
+						pass
+				else:
+					try:
+						self.stdscr.addstr(button_y, 10, name, self.CYAN | curses.A_BOLD)
+						self.stdscr.addstr(button_y + 1, 12, desc, self.GREEN)
+					except curses.error:
+						pass
+
+				# Store button position
+				self.profile_buttons.append({
+					'profile': profile_key,
+					'y': button_y,
+					'x': 8
+				})
+
+			self.draw_footer("↑↓: Navigate | Enter: Select | q: Quit")
+			return {'screen': 'profiles', 'profiles': profiles_with_custom}
+
+		def screen_categories(self):
+			"""Category selection screen"""
+			self.current_screen = 'categories'
+			self.clear_screen()
+
+			line = self.draw_header("Select Tools by Category")
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Click category to edit tools:", self.CYAN)
+			except curses.error:
+				pass
+			line += 2
+
+			# Reset cursor if out of bounds
+			if self.cursor_pos >= len(self.categories_list):
+				self.cursor_pos = 0
+			self.max_items = len(self.categories_list)
+
+			self.category_buttons = []
+
+			for idx, category in enumerate(self.categories_list):
+				cat_y = line + idx
+				desc = CATEGORIES[category]['description']
+				tools = CATEGORIES[category]['tools']
+				selected = sum(1 for t in tools if t in self.selected_tools)
+				total = len(tools)
+
+				# Selection status
+				if selected == total:
+					status = f"[All]"
+					color = self.GREEN
+				elif selected > 0:
+					status = f"[{selected}/{total}]"
+					color = self.YELLOW
+				else:
+					status = f"[None]"
+					color = self.CYAN
+
+				# Draw with cursor highlight
+				if idx == self.cursor_pos:
+					try:
+						self.stdscr.addstr(cat_y, 6, f"► {desc}", self.HIGHLIGHT_BOLD)
+						self.stdscr.addstr(cat_y, 40, status, color | curses.A_BOLD)
+					except curses.error:
+						pass
+				else:
+					try:
+						self.stdscr.addstr(cat_y, 8, desc, self.CYAN | curses.A_BOLD)
+						self.stdscr.addstr(cat_y, 42, status, color | curses.A_BOLD)
+					except curses.error:
+						pass
+
+				# Store button position
+				self.category_buttons.append({
+					'category': category,
+					'y': cat_y,
+					'x': 6,
+					'width': len(desc)
+				})
+
+			# Action buttons at bottom
+			button_y = cat_y + 2
+
+			# We have 2 extra items: Accept and Back
+			self.max_items = len(self.categories_list) + 2
+
+			# Adjust cursor for action buttons
+			adj_cursor = self.cursor_pos - len(self.categories_list)
+
+			self.draw_button(button_y, 6, "Accept", is_cursor=(self.cursor_pos >= len(self.categories_list) and adj_cursor == 0))
+			self.draw_button(button_y, 22, "Back", is_cursor=(self.cursor_pos >= len(self.categories_list) and adj_cursor == 1))
+
+			self.draw_footer("↑↓: Navigate | Enter: Select/Action | q: Quit")
+			return {'screen': 'categories', 'button_y': button_y}
+
+		def screen_tools(self, category: str):
+			"""Tool selection within a category"""
+			self.current_screen = 'tools'
+			self.clear_screen()
+
+			desc = CATEGORIES[category]['description']
+			tools = CATEGORIES[category]['tools']
+
+			line = self.draw_header(desc)
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Click tools to toggle:", self.CYAN)
+			except curses.error:
+				pass
+			line += 2
+
+			# Reset cursor if out of bounds
+			if self.cursor_pos >= len(tools):
+				self.cursor_pos = 0
+			self.max_items = len(tools)
+
+			self.tool_buttons = []
+
+			# Two columns
+			for idx, tool in enumerate(tools):
+				col = idx // 10
+				row = idx % 10
+				y = line + row
+				x = 8 + col * 28
+
+				is_selected = tool in self.tool_selections[category]
+
+				self.draw_checkbox(y, x, tool, is_selected, is_cursor=(idx == self.cursor_pos))
+
+				# Store button position
+				self.tool_buttons.append({
+					'tool': tool,
+					'y': y,
+					'x': x,
+					'width': len(tool) + 5
+				})
+
+			# Action buttons
+			button_y = y + 2
+			# We have 3 extra items: All, None, Done
+			self.max_items = len(tools) + 3
+			adj_cursor = self.cursor_pos - len(tools)
+
+			self.draw_button(button_y, 8, "All", is_cursor=(adj_cursor == 0))
+			self.draw_button(button_y, 22, "None", is_cursor=(adj_cursor == 1))
+			self.draw_button(button_y, 36, "Done", is_cursor=(adj_cursor == 2))
+
+			self.draw_footer("↑↓: Navigate | Space: Toggle | Enter: Action | q: Quit")
+			return {'screen': 'tools', 'category': category, 'button_y': button_y}
+
+		def screen_confirm(self):
+			"""Confirmation screen"""
+			self.current_screen = 'confirm'
+			self.clear_screen()
+
+			line = self.draw_header("Confirm Installation")
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Summary of selections:", self.CYAN | curses.A_BOLD)
+			except curses.error:
+				pass
+			line += 1
+			try:
+				self.stdscr.addstr(line, 4, f"Total tools: {len(self.selected_tools)}", self.GREEN | curses.A_BOLD)
+			except curses.error:
+				pass
+			line += 2
+
+			# Group tools by category
+			tools_by_category = {}
+			for tool in self.selected_tools:
+				for category, data in CATEGORIES.items():
+					if tool in data['tools']:
+						if category not in tools_by_category:
+							tools_by_category[category] = []
+						tools_by_category[category].append(tool)
+						break
+
+			# Display selections (compact format)
+			for category in sorted(tools_by_category.keys()):
+				cat_desc = CATEGORIES[category]['description']
+				tools = sorted(tools_by_category[category])
+
+				try:
+					self.stdscr.addstr(line, 4, f"{cat_desc}:", self.CYAN | curses.A_BOLD)
+				except curses.error:
+					pass
+				line += 1
+
+				# Truncate if too long
+				tool_line = ", ".join(tools)
+				if len(tool_line) > 60:
+					tool_line = tool_line[:57] + "..."
+				try:
+					self.stdscr.addstr(line, 6, tool_line, self.GREEN)
+				except curses.error:
+					pass
+				line += 1
+
+			# Buttons - we have 2 items: Install and Cancel
+			self.max_items = 2
+			if self.cursor_pos >= self.max_items:
+				self.cursor_pos = 0
+
+			# Buttons
+			line += 1
+			self.draw_button(line, 6, "Install", is_cursor=(self.cursor_pos == 0))
+			self.draw_button(line, 22, "Cancel", is_cursor=(self.cursor_pos == 1))
+
+			self.draw_footer("↑↓: Navigate | Enter: Action | q: Quit")
+			return {'screen': 'confirm', 'button_y': line}
+
+		def handle_input(self, event, screen_data):
+			"""Handle keyboard/mouse input"""
+			action = None
+
+			# Handle keyboard
+			if event == curses.KEY_UP:
+				self.cursor_pos = max(0, self.cursor_pos - 1)
+				return 'redraw'
+
+			elif event == curses.KEY_DOWN:
+				self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
+				return 'redraw'
+
+			elif event == ord('q') or event == ord('Q'):
+				return 'quit'
+
+			elif event == curses.KEY_ENTER or event == 10 or event == 13:
+				# Activate based on current screen and cursor position
+				if self.current_screen == 'welcome':
+					action = 'next'
+
+				elif self.current_screen == 'profiles':
+					profiles = screen_data.get('profiles', [])
+					if 0 <= self.cursor_pos < len(profiles):
+						selected = profiles[self.cursor_pos]
+						action = f'profile_{selected}'
+
+				elif self.current_screen == 'categories':
+					if self.cursor_pos < len(self.categories_list):
+						category = self.categories_list[self.cursor_pos]
+						action = f'category_{category}'
+					elif self.cursor_pos == len(self.categories_list):
+						action = 'accept'
+					else:
+						action = 'back'
+
+				elif self.current_screen == 'tools':
+					tools = CATEGORIES[screen_data.get('category', '')]['tools']
+					if self.cursor_pos < len(tools):
+						# Toggle the tool
+						tool = tools[self.cursor_pos]
+						category = screen_data.get('category', '')
+						if tool in self.tool_selections[category]:
+							self.tool_selections[category].remove(tool)
+							self.selected_tools.discard(tool)
+						else:
+							self.tool_selections[category].add(tool)
+							self.selected_tools.add(tool)
+						return 'redraw'
+					else:
+						adj_cursor = self.cursor_pos - len(tools)
+						if adj_cursor == 0:
+							action = 'select_all'
+						elif adj_cursor == 1:
+							action = 'select_none'
+						else:
+							action = 'done'
+
+				elif self.current_screen == 'confirm':
+					if self.cursor_pos == 0:
+						action = 'install'
+					else:
+						action = 'cancel'
+
+			elif event == 32:  # Space bar - toggle checkbox
+				if self.current_screen == 'tools':
+					tools = CATEGORIES[screen_data.get('category', '')]['tools']
+					if self.cursor_pos < len(tools):
+						tool = tools[self.cursor_pos]
+						category = screen_data.get('category', '')
+						if tool in self.tool_selections[category]:
+							self.tool_selections[category].remove(tool)
+							self.selected_tools.discard(tool)
+						else:
+							self.tool_selections[category].add(tool)
+							self.selected_tools.add(tool)
+						return 'redraw'
+
+			# Handle mouse
+			elif event == curses.KEY_MOUSE:
+				try:
+					_, mx, my, _, bstate = curses.getmouse()
+					# Check for left click
+					if bstate & curses.BUTTON1_CLICKED:
+						# Welcome screen
+						if self.current_screen == 'welcome':
+							if my == screen_data.get('button_line', 0) + 2 and 4 <= mx <= 14:
+								action = 'next'
+
+						# Profiles screen
+						elif self.current_screen == 'profiles':
+							for btn in self.profile_buttons:
+								if btn['y'] == my and 6 <= mx <= 30:
+									action = f'profile_{btn["profile"]}'
+									self.cursor_pos = self.profile_buttons.index(btn)
+
+						# Categories screen
+						elif self.current_screen == 'categories':
+							for btn in self.category_buttons:
+								if (btn['y'] == my and
+									btn['x'] <= mx <= btn['x'] + btn['width']):
+									action = f'category_{btn["category"]}'
+									self.cursor_pos = self.category_buttons.index(btn)
+									break
+
+							button_y = screen_data.get('button_y', 0)
+							if my == button_y:
+								if 6 <= mx <= 15:  # Accept
+									action = 'accept'
+									self.cursor_pos = len(self.categories_list)
+								elif 22 <= mx <= 29:  # Back
+									action = 'back'
+									self.cursor_pos = len(self.categories_list) + 1
+
+						# Tools screen
+						elif self.current_screen == 'tools':
+							category = screen_data.get('category', '')
+							for btn in self.tool_buttons:
+								if (btn['y'] == my and
+									btn['x'] <= mx <= btn['x'] + btn['width']):
+									tool = btn['tool']
+									self.cursor_pos = self.tool_buttons.index(btn)
+									if tool in self.tool_selections[category]:
+										self.tool_selections[category].remove(tool)
+										self.selected_tools.discard(tool)
+									else:
+										self.tool_selections[category].add(tool)
+										self.selected_tools.add(tool)
+									return 'redraw'
+
+							button_y = screen_data.get('button_y', 0)
+							if my == button_y:
+								tools = CATEGORIES[category]['tools']
+								if 8 <= mx <= 14:  # All
+									action = 'select_all'
+									self.cursor_pos = len(tools)
+								elif 22 <= mx <= 29:  # None
+									action = 'select_none'
+									self.cursor_pos = len(tools) + 1
+								elif 36 <= mx <= 43:  # Done
+									action = 'done'
+									self.cursor_pos = len(tools) + 2
+
+						# Confirm screen
+						elif self.current_screen == 'confirm':
+							button_y = screen_data.get('button_y', 0)
+							if my == button_y:
+								if 6 <= mx <= 16:  # Install
+									action = 'install'
+									self.cursor_pos = 0
+								elif 22 <= mx <= 31:  # Cancel
+									action = 'cancel'
+									self.cursor_pos = 1
+				except curses.error:
+					pass
+
+			return action
+
+		def run(self):
+			"""Main TUI loop"""
+			screen_data = self.screen_welcome()
+			selected_profile = None
+
+			while True:
+				# Draw current screen
+				if self.current_screen == 'welcome':
+					screen_data = self.screen_welcome()
+				elif self.current_screen == 'profiles':
+					screen_data = self.screen_profiles()
+				elif self.current_screen == 'categories':
+					screen_data = self.screen_categories()
+				elif self.current_screen == 'tools':
+					screen_data = self.screen_tools(screen_data.get('category', ''))
+				elif self.current_screen == 'confirm':
+					screen_data = self.screen_confirm()
+
+				self.stdscr.refresh()
+
+				# Get input
+				event = self.stdscr.getch()
+				action = self.handle_input(event, screen_data)
+
+				# Handle 'redraw' action (no state change, just refresh)
+				if action == 'redraw':
+					continue
+
+				# Handle other actions
+				if action == 'quit':
+					return None
+
+				elif action == 'next' or action == 'profile_1':
+					selected_profile = 'minimal'
+					self.selected_tools = get_tools_from_profile(selected_profile)
+					# Initialize selections
+					for category in CATEGORIES:
+						self.tool_selections[category] = set()
+					for tool in self.selected_tools:
+						for category, data in CATEGORIES.items():
+							if tool in data['tools']:
+								self.tool_selections[category].add(tool)
+								break
+					self.cursor_pos = 0
+					screen_data = self.screen_categories()
+
+				elif action == 'back':
+					self.selected_tools = set()
+					self.cursor_pos = 0
+					screen_data = self.screen_profiles()
+
+				elif action.startswith('profile_'):
+					profile_key = action.split('_', 1)[1]
+					if profile_key != 'custom':
+						selected_profile = profile_key
+						self.selected_tools = get_tools_from_profile(profile_key)
+						# Initialize selections
+						for category in CATEGORIES:
+							self.tool_selections[category] = set()
+						for tool in self.selected_tools:
+							for category, data in CATEGORIES.items():
+								if tool in data['tools']:
+									self.tool_selections[category].add(tool)
+									break
+					else:
+						selected_profile = None
+						self.selected_tools = set()
+					self.cursor_pos = 0
+					screen_data = self.screen_categories()
+
+				elif action.startswith('category_'):
+					category = action.split('_', 1)[1]
+					self.cursor_pos = 0
+					screen_data = self.screen_tools(category)
+
+				elif action == 'select_all':
+					category = screen_data.get('category', '')
+					for tool in CATEGORIES[category]['tools']:
+						self.tool_selections[category].add(tool)
+						self.selected_tools.add(tool)
+					return 'redraw'
+
+				elif action == 'select_none':
+					category = screen_data.get('category', '')
+					for tool in CATEGORIES[category]['tools']:
+						self.tool_selections[category].discard(tool)
+						self.selected_tools.discard(tool)
+					return 'redraw'
+
+				elif action == 'done':
+					self.cursor_pos = 0
+					screen_data = self.screen_categories()
+
+				elif action == 'accept':
+					if self.selected_tools:
+						self.cursor_pos = 0
+						screen_data = self.screen_confirm()
+
+				elif action == 'install':
+					return self.selected_tools
+
+				elif action == 'cancel':
+					self.cursor_pos = 0
+					screen_data = self.screen_categories()
 				try:
 					self.stdscr.addstr(line, 4, text, self.GREEN if "Detected OS" in text else self.CYAN)
 				except curses.error:
