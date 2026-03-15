@@ -1,0 +1,61 @@
+name: Lint Shell Scripts
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  shellcheck:
+    name: ShellCheck Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck on all shell scripts
+        run: |
+          # Find all .sh files and run shellcheck
+          find . -type f -name "*.sh" -print0 | xargs -0 shellcheck
+
+          # Exit with error if shellcheck found issues
+          exit $?
+
+      - name: Display ShellCheck version
+        run: shellcheck --version
+
+      - name: Check for shell scripts
+        run: |
+          echo "All shell scripts found:"
+          find . -type f -name "*.sh" -type f
+
+  # Optional job: Check if scripts are executable
+  permissions:
+    name: Check Script Permissions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check script permissions
+        run: |
+          echo "Checking if shell scripts in scripts/ are executable..."
+
+          # Find non-executable .sh files in scripts/
+          non_exec=$(find scripts/ -type f -name "*.sh" ! -perm /usr/bin/x)
+
+          if [ -n "$non_exec" ]; then
+            echo "ERROR: The following shell scripts are not executable:"
+            echo "$non_exec"
+            exit 1
+          else
+            echo "✓ All shell scripts in scripts/ are executable"
+          fi

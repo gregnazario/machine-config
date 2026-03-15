@@ -1,8 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Interactive installer for Greg's Dotfiles
 # Detects OS and lets user choose which tools to configure
+# POSIX-compliant shell script
 
-set -euo pipefail
+set -e -u
 
 # Color definitions
 RED='\033[0;31m'
@@ -14,95 +15,57 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Source utilities
 # shellcheck source=../utils/detect-os.sh
 if [ -f "$SCRIPT_DIR/../utils/detect-os.sh" ]; then
-    source "$SCRIPT_DIR/../utils/detect-os.sh"
+    . "$SCRIPT_DIR/../utils/detect-os.sh"
 fi
 
 # shellcheck source=../utils/common.sh
 if [ -f "$SCRIPT_DIR/../utils/common.sh" ]; then
-    source "$SCRIPT_DIR/../utils/common.sh"
+    . "$SCRIPT_DIR/../utils/common.sh"
 fi
-
-# Tool categories with descriptions
-declare -A TOOL_CATEGORIES=(
-    ["terminals"]="Terminal Multiplexers (zellij, tmux, screen)"
-    ["editors"]="Text Editors (neovim, helix, emacs)"
-    ["shells"]="Shell Configurations (zsh, fish, nushell)"
-    ["navigation"]="File Navigation (yazi, fd, ripgrep, fzf)"
-    ["monitoring"]="System Monitoring (btop, glances, modern-utils)"
-    ["version-control"]="Version Control (git, gh, lazygit, git-fuzzy)"
-    ["network"]="Network Tools (gping, httpie, speedtest, bandwhich)"
-    ["productivity"]="Productivity Tools (presenterm, todotxt, jira-cli)"
-    ["transfer"]="Download/Transfer (aria2, curlie, wget2)"
-    ["development"]="Dev Tools (python, rust, nodejs, project-templates)"
-    ["containers"]="Container Tools (nix, docker, kubernetes)"
-    ["security"]="Security Tools (age, ssh, vault, totp)"
-    ["archive"]="Archive Tools (compressors, parallel, unar, image-tools)"
-    ["documentation"]="Documentation (tldr, man, cheat, docuum)"
-    ["fun"]="Fun Utilities (fetch tools, qalc, etc)"
-)
-
-# Available tools in each category
-declare -A CATEGORY_TOOLS=(
-    ["terminals"]="zellij tmux screen"
-    ["editors"]="neovim helix emacs"
-    ["shells"]="zsh fish nushell"
-    ["navigation"]="yazi fd ripgrep fzf"
-    ["monitoring"]="btop glances modern-utils"
-    ["version-control"]="git gh lazygit git-fuzzy"
-    ["network"]="gping httpie speedtest bandwhich"
-    ["productivity"]="presenterm todotxt jira-cli terminal-notes"
-    ["transfer"]="aria2 curlie wget2"
-    ["development"]="python rust nodejs project-templates"
-    ["containers"]="nix docker kubernetes version-managers"
-    ["security"]="age ssh vault totp"
-    ["archive"]="compressors parallel unar image-tools"
-    ["documentation"]="tldr man cheat docuum"
-    ["fun"]="fetch utilities"
-)
 
 # Header
 print_header() {
     clear
-    echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC}        ${GREEN}Greg's Dotfiles - Interactive Installer${NC}           ${CYAN}║${NC}"
-    echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
+    printf "%b╔════════════════════════════════════════════════════════════╗%b\n" "$CYAN" "$NC"
+    printf "%b║%b        %bGreg's Dotfiles - Interactive Installer%b           %b║%b\n" "$CYAN" "$NC" "$GREEN" "$NC" "$CYAN" "$NC"
+    printf "%b╚════════════════════════════════════════════════════════════╝%b\n" "$CYAN" "$NC"
+    printf "\n"
 }
 
 # Detect OS (fallback if detect-os.sh not available)
 detect_os_fallback() {
     if [ "$(uname)" = "Darwin" ]; then
-        echo "macos"
+        printf "macos"
     elif [ -f /etc/fedora-release ]; then
-        echo "fedora"
+        printf "fedora"
     elif [ -f /etc/arch-release ]; then
-        echo "arch"
+        printf "arch"
     elif [ -f /etc/gentoo-release ]; then
-        echo "gentoo"
+        printf "gentoo"
     elif [ -f /etc/ubuntu-release ] || grep -q Ubuntu /etc/os-release 2>/dev/null; then
-        echo "ubuntu"
+        printf "ubuntu"
     elif [ -f /etc/void-release ]; then
-        echo "void"
+        printf "void"
     elif [ -f /etc/oracle-release ]; then
-        echo "oracle"
+        printf "oracle"
     elif [ -f /etc/rocky-release ]; then
-        echo "rocky"
+        printf "rocky"
     elif [ -f /etc/alpine-release ]; then
-        echo "alpine"
+        printf "alpine"
     elif grep -q "Raspberry Pi" /proc/cpuinfo 2>/dev/null; then
-        echo "rpi"
+        printf "rpi"
     elif [ "$(uname)" = "Linux" ] && grep -q microsoft /proc/version 2>/dev/null; then
-        echo "windows"
+        printf "windows"
     elif [ "$(uname)" = "FreeBSD" ]; then
-        echo "freebsd"
+        printf "freebsd"
     else
-        echo "unknown"
+        printf "unknown"
     fi
 }
 
@@ -111,40 +74,42 @@ CURRENT_OS=$(detect_os_fallback)
 
 # Print system info
 print_system_info() {
-    echo -e "${BLUE}System Information:${NC}"
-    echo -e "  OS:        ${GREEN}$(capitalize "$CURRENT_OS")${NC}"
-    echo -e "  Hostname:  ${GREEN}$(hostname)${NC}"
-    echo -e "  User:      ${GREEN}$(whoami)${NC}"
-    echo ""
+    printf "%bSystem Information:%b\n" "$BLUE" "$NC"
+    printf "  OS:        %b%s%b\n" "$GREEN" "$(capitalize "$CURRENT_OS")" "$NC"
+    printf "  Hostname:  %b%s%b\n" "$GREEN" "$(hostname)" "$NC"
+    printf "  User:      %b%s%b\n" "$GREEN" "$(whoami)" "$NC"
+    printf "\n"
 }
 
 # Capitalize first letter
 capitalize() {
-    echo "$1" | sed 's/./\U&/'
+    # Use sed to capitalize first letter
+    printf "%s" "$1" | sed 's/./\U&/'
 }
 
 # Print section header
 print_section() {
-    echo ""
-    echo -e "${PURPLE}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${PURPLE}  $1${NC}"
-    echo -e "${PURPLE}═══════════════════════════════════════════════════════════${NC}"
-    echo ""
+    printf "\n"
+    printf "%b═══════════════════════════════════════════════════════════%b\n" "$PURPLE" "$NC"
+    printf "%b  %s%b\n" "$PURPLE" "$1" "$NC"
+    printf "%b═══════════════════════════════════════════════════════════%b\n" "$PURPLE" "$NC"
+    printf "\n"
 }
 
 # Prompt yes/no
 prompt_yes_no() {
-    local prompt="$1"
-    local default="${2:-n}"
+    prompt="$1"
+    default="${2:-n}"
 
     if [ "$default" = "y" ]; then
-        prompt="$prompt [Y/n] "
+        prompt_printf="$prompt [Y/n] "
     else
-        prompt="$prompt [y/N] "
+        prompt_printf="$prompt [y/N] "
     fi
 
     while true; do
-        read -rp "$(echo -e ${YELLOW}→${NC} $prompt)" response
+        printf "%b→%b %s" "$YELLOW" "$NC" "$prompt_printf"
+        read -r response
         response=${response:-$default}
 
         case "$response" in
@@ -155,7 +120,7 @@ prompt_yes_no() {
                 return 1
                 ;;
             *)
-                echo -e "${RED}Please answer yes or no.${NC}"
+                printf "%bPlease answer yes or no.%b\n" "$RED" "$NC"
                 ;;
         esac
     done
@@ -163,62 +128,112 @@ prompt_yes_no() {
 
 # Select from options
 prompt_select() {
-    local prompt="$1"
+    prompt="$1"
     shift
-    local options=("$@")
-    local default="${options[0]}"
+    options="$*"
 
-    echo -e "${YELLOW}→${NC} $prompt"
-    echo ""
+    printf "%b→%b %s\n" "$YELLOW" "$NC" "$prompt"
+    printf "\n"
 
-    local i=1
-    for opt in "${options[@]}"; do
-        echo -e "  ${CYAN}$i)${NC} $opt"
-        ((i++))
+    # Count options and display
+    i=1
+    for opt in $options; do
+        printf "  %b%s)%b %s\n" "$CYAN" "$i" "$NC" "$opt"
+        i=$((i + 1))
     done
-    echo ""
+    printf "\n"
+
+    # Get total count
+    count=0
+    for _ in $options; do
+        count=$((count + 1))
+    done
 
     while true; do
-        read -rp "$(echo -e ${YELLOW}Choice [1-${#options[@]}] [${default}]:${NC} )" choice
+        printf "%b→%b Choice [1-%s] [1]: " "$YELLOW" "$NC" "$count"
+        read -r choice
         choice=${choice:-1}
 
-        if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#options[@]}" ]; then
-            echo "${options[$((choice-1))]}"
-            return
+        # Validate choice is a number
+        case "$choice" in
+            ''|*[!0-9]*)
+                printf "%bInvalid choice. Please enter a number.%b\n" "$RED" "$NC"
+                continue
+                ;;
+        esac
+
+        if [ "$choice" -ge 1 ] && [ "$choice" -le "$count" ]; then
+            # Get the selected option
+            i=1
+            for opt in $options; do
+                if [ "$i" -eq "$choice" ]; then
+                    printf "%s\n" "$opt"
+                    return
+                fi
+                i=$((i + 1))
+            done
         else
-            echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#options[@]}.${NC}"
+            printf "%bInvalid choice. Please enter a number between 1 and %s.%b\n" "$RED" "$count" "$NC"
         fi
     done
 }
 
 # Multi-select from options
 prompt_multi_select() {
-    local prompt="$1"
+    prompt="$1"
     shift
-    local options=("$@")
+    options="$*"
 
-    echo -e "${YELLOW}→${NC} $prompt"
-    echo -e "  ${CYAN}Enter numbers separated by spaces (e.g., '1 3 5')${NC}"
-    echo ""
+    printf "%b→%b %s\n" "$YELLOW" "$NC" "$prompt"
+    printf "  %bEnter numbers separated by spaces (e.g., '1 3 5')%b\n" "$CYAN" "$NC"
+    printf "\n"
 
-    local i=1
-    for opt in "${options[@]}"; do
-        echo -e "  ${CYAN}$i)${NC} $opt"
-        ((i++))
+    # Display options
+    i=1
+    for opt in $options; do
+        printf "  %b%s)%b %s\n" "$CYAN" "$i" "$NC" "$opt"
+        i=$((i + 1))
     done
-    echo ""
+    printf "\n"
 
-    read -rp "$(echo -e ${YELLOW}Selection [1-${#options[@]}] (all):${NC} )" selection
-    selection=${selection:-$(seq -s " " 1 "${#options[@]}")}
+    # Get total count
+    count=0
+    for _ in $options; do
+        count=$((count + 1))
+    done
 
-    local selected=()
+    # Get selection
+    printf "%b→%b Selection [1-%s] (all): " "$YELLOW" "$NC" "$count"
+    read -r selection
+    selection=${selection:-$(seq -s " " 1 "$count")}
+
+    # Process selection
+    selected=""
     for num in $selection; do
-        if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#options[@]}" ]; then
-            selected+=("${options[$((num-1))]}")
+        # Validate num is numeric
+        case "$num" in
+            ''|*[!0-9]*)
+                continue
+                ;;
+        esac
+
+        if [ "$num" -ge 1 ] && [ "$num" -le "$count" ]; then
+            i=1
+            for opt in $options; do
+                if [ "$i" -eq "$num" ]; then
+                    if [ -n "$selected" ]; then
+                        selected="$selected $opt"
+                    else
+                        selected="$opt"
+                    fi
+                    break
+                fi
+                i=$((i + 1))
+            done
         fi
     done
 
-    echo "${selected[@]}"
+    printf "%s\n" "$selected"
 }
 
 # Display welcome message
@@ -226,101 +241,213 @@ welcome() {
     print_header
     print_system_info
 
-    echo -e "${GREEN}Welcome to the interactive dotfiles installer!${NC}"
-    echo ""
-    echo "This installer will help you:"
-    echo "  • Select which tools to configure"
-    echo "  • Install tools (optional)"
-    echo "  • Apply OS-specific configuration layers"
-    echo "  • Create symlinks to your home directory"
-    echo ""
-    echo -e "${YELLOW}Press Enter to continue...${NC}"
+    printf "%bWelcome to the interactive dotfiles installer!%b\n" "$GREEN" "$NC"
+    printf "\n"
+    printf "This installer will help you:\n"
+    printf "  • Select which tools to configure\n"
+    printf "  • Install tools (optional)\n"
+    printf "  • Apply OS-specific configuration layers\n"
+    printf "  • Create symlinks to your home directory\n"
+    printf "\n"
+    printf "%bPress Enter to continue...%b\n" "$YELLOW" "$NC"
     read -r
+}
+
+# Define categories
+get_categories() {
+    printf "terminals editors shells navigation monitoring version-control network productivity transfer development containers security archive documentation fun"
+}
+
+# Get category description
+get_category_description() {
+    category="$1"
+    case "$category" in
+        terminals)
+            printf "Terminal Multiplexers (zellij, tmux, screen)"
+            ;;
+        editors)
+            printf "Text Editors (neovim, helix, emacs)"
+            ;;
+        shells)
+            printf "Shell Configurations (zsh, fish, nushell)"
+            ;;
+        navigation)
+            printf "File Navigation (yazi, fd, ripgrep, fzf)"
+            ;;
+        monitoring)
+            printf "System Monitoring (btop, glances, modern-utils)"
+            ;;
+        version-control)
+            printf "Version Control (git, gh, lazygit, git-fuzzy)"
+            ;;
+        network)
+            printf "Network Tools (gping, httpie, speedtest, bandwhich)"
+            ;;
+        productivity)
+            printf "Productivity Tools (presenterm, todotxt, jira-cli)"
+            ;;
+        transfer)
+            printf "Download/Transfer (aria2, curlie, wget2)"
+            ;;
+        development)
+            printf "Dev Tools (python, rust, nodejs, project-templates)"
+            ;;
+        containers)
+            printf "Container Tools (nix, docker, kubernetes, version-managers)"
+            ;;
+        security)
+            printf "Security Tools (age, ssh, 1password-cli, totp)"
+            ;;
+        archive)
+            printf "Archive Tools (7z, unar, compressors, parallel)"
+            ;;
+        documentation)
+            printf "Documentation (tldr, tealdeer, man, cheat)"
+            ;;
+        fun)
+            printf "Fun Utilities (fetch, qalc, joke)"
+            ;;
+        *)
+            printf "Unknown category"
+            ;;
+    esac
+}
+
+# Get tools for a category
+get_category_tools() {
+    category="$1"
+    case "$category" in
+        terminals)
+            printf "zellij tmux screen"
+            ;;
+        editors)
+            printf "neovim helix emacs"
+            ;;
+        shells)
+            printf "zsh fish nushell"
+            ;;
+        navigation)
+            printf "yazi fd ripgrep fzf"
+            ;;
+        monitoring)
+            printf "btop glances modern-utils"
+            ;;
+        version-control)
+            printf "git gh lazygit git-fuzzy"
+            ;;
+        network)
+            printf "gping httpie speedtest bandwhich"
+            ;;
+        productivity)
+            printf "presenterm todotxt jira-cli terminal-notes"
+            ;;
+        transfer)
+            printf "aria2 curlie wget2"
+            ;;
+        development)
+            printf "python rust nodejs project-templates"
+            ;;
+        containers)
+            printf "nix docker kubernetes version-managers"
+            ;;
+        security)
+            printf "age ssh 1password-cli totp"
+            ;;
+        archive)
+            printf "compressors parallel unar image-tools"
+            ;;
+        documentation)
+            printf "tldr tealdeer man cheat docuum"
+            ;;
+        fun)
+            printf "fetch utilities qalc"
+            ;;
+        *)
+            printf ""
+            ;;
+    esac
 }
 
 # Select categories
 select_categories() {
     print_section "Step 1: Select Categories"
 
-    echo "Select which categories of tools you want to configure:"
-    echo ""
+    printf "Select which categories of tools you want to configure:\n"
+    printf "\n"
 
-    local categories=("${!TOOL_CATEGORIES[@]}")
-
-    local i=1
-    for cat in "${categories[@]}"; do
-        echo -e "  ${CYAN}$i)${NC} ${TOOL_CATEGORIES[$cat]}"
-        ((i++))
+    categories=$(get_categories)
+    i=1
+    for cat in $categories; do
+        desc=$(get_category_description "$cat")
+        printf "  %b%s)%b %s\n" "$CYAN" "$i" "$NC" "$desc"
+        i=$((i + 1))
     done
-    echo -e "  ${CYAN}a)${NC} All categories"
-    echo ""
+    printf "  %ba)%b All categories\n" "$CYAN" "$NC"
+    printf "\n"
 
-    read -rp "$(echo -e ${YELLOW}Selection [1-${#categories[@]} or 'a' for all]:${NC} )" selection
-
-    if [[ "$selection" =~ ^[Aa]$ ]]; then
-        echo "${categories[@]}"
-    else
-        local selected=()
-        for num in $selection; do
-            if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#categories[@]}" ]; then
-                selected+=("${categories[$((num-1))]}")
-            fi
-        done
-        echo "${selected[@]}"
-    fi
-}
-
-# Select tools in a category
-select_tools_in_category() {
-    local category="$1"
-    local tools=($CATEGORY_TOOLS[$category])
-
-    print_section "Step 2: Select $category Tools"
-
-    echo "Select which ${category} tools to configure:"
-    echo ""
-
-    local i=1
-    for tool in "${tools[@]}"; do
-        echo -e "  ${CYAN}$i)${NC} $tool"
-        ((i++))
+    # Get count
+    count=0
+    for _ in $categories; do
+        count=$((count + 1))
     done
-    echo -e "  ${CYAN}a)${NC} All tools"
-    echo ""
 
-    read -rp "$(echo -e ${YELLOW}Selection [1-${#tools[@]} or 'a' for all]:${NC} )" selection
+    printf "%b→%b Selection [1-%s or 'a' for all]: " "$YELLOW" "$NC" "$count"
+    read -r selection
 
-    if [[ "$selection" =~ ^[Aa]$ ]]; then
-        echo "${tools[@]}"
-    else
-        local selected=()
-        for num in $selection; do
-            if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#tools[@]}" ]; then
-                selected+=("${tools[$((num-1))]}")
-            fi
-        done
-        echo "${selected[@]}"
-    fi
+    case "$selection" in
+        [Aa]|[Aa][Ll][Ll])
+            # All categories
+            printf "%s\n" "$categories"
+            ;;
+        *)
+            # Parse selection
+            selected=""
+            for num in $selection; do
+                case "$num" in
+                    ''|*[!0-9]*)
+                        continue
+                        ;;
+                esac
+
+                if [ "$num" -ge 1 ] && [ "$num" -le "$count" ]; then
+                    i=1
+                    for cat in $categories; do
+                        if [ "$i" -eq "$num" ]; then
+                            if [ -n "$selected" ]; then
+                                selected="$selected $cat"
+                            else
+                                selected="$cat"
+                            fi
+                            break
+                        fi
+                        i=$((i + 1))
+                    done
+                fi
+            done
+            printf "%s\n" "$selected"
+            ;;
+    esac
 }
 
 # Confirm installation
 confirm_install() {
-    print_section "Step 3: Confirm Installation"
+    print_section "Step 2: Confirm Installation"
 
-    echo "Summary of selections:"
-    echo ""
+    printf "Summary of selections:\n"
+    printf "\n"
 
     # Display summary
     for category in "$@"; do
-        echo -e "${CYAN}$category:${NC}"
-        for tool in $(echo $CATEGORY_TOOLS[$category]); do
-            echo "  • $tool"
+        printf "%b%s:%b\n" "$CYAN" "$category" "$NC"
+        tools=$(get_category_tools "$category")
+        for tool in $tools; do
+            printf "  • %s\n" "$tool"
         done
-        echo ""
+        printf "\n"
     done
 
-    echo -e "${YELLOW}Target OS: ${GREEN}$(capitalize "$CURRENT_OS")${NC}"
-    echo ""
+    printf "%bTarget OS: %b%s%b\n" "$YELLOW" "$NC" "$(capitalize "$CURRENT_OS")" "$GREEN" "$NC"
+    printf "\n"
 
     if prompt_yes_no "Proceed with installation?"; then
         return 0
@@ -334,47 +461,43 @@ main() {
     welcome
 
     # Select categories
-    local selected_categories
     selected_categories=$(select_categories)
-    selected_categories=($selected_categories)
 
-    if [ ${#selected_categories[@]} -eq 0 ]; then
-        echo -e "${RED}No categories selected. Exiting.${NC}"
+    if [ -z "$selected_categories" ]; then
+        printf "%bNo categories selected. Exiting.%b\n" "$RED" "$NC"
         exit 1
     fi
 
-    # For now, install all selected categories
-    # In future, can add per-tool selection
-
-    if confirm_install "${selected_categories[@]}"; then
+    # Confirm installation
+    if confirm_install $selected_categories; then
         print_section "Installing Configurations"
 
-        for category in "${selected_categories[@]}"; do
-            echo -e "${GREEN}Installing $category...${NC}"
+        for category in $selected_categories; do
+            printf "%bInstalling %s...%b\n" "$GREEN" "$category" "$NC"
 
             # Check if category installer exists
             if [ -f "$SCRIPT_DIR/install-${category}.sh" ]; then
-                bash "$SCRIPT_DIR/install-${category}.sh" "$CURRENT_OS" "$REPO_ROOT"
+                sh "$SCRIPT_DIR/install-${category}.sh" "$CURRENT_OS" "$REPO_ROOT"
             else
-                echo -e "${YELLOW}  No installer found for $category${NC}"
-                echo -e "  You'll need to configure manually or create installer"
+                printf "%b  No installer found for %s%b\n" "$YELLOW" "$category" "$NC"
+                printf "  You'll need to configure manually or create installer\n"
             fi
         done
 
         print_section "Installation Complete"
 
-        echo -e "${GREEN}✓ Installation completed!${NC}"
-        echo ""
-        echo "Next steps:"
-        echo "  1. Restart your shell or run: source ~/.config/shell/rc"
-        echo "  2. Check each tool's configuration"
-        echo "  3. Customize as needed"
-        echo ""
-        echo -e "${YELLOW}Note: Some tools may require manual installation${NC}"
-        echo "      See individual tool READMEs for details"
-        echo ""
+        printf "%b✓ Installation completed!%b\n" "$GREEN" "$NC"
+        printf "\n"
+        printf "Next steps:\n"
+        printf "  1. Restart your shell or run: source ~/.config/shell/rc\n"
+        printf "  2. Check each tool's configuration\n"
+        printf "  3. Customize as needed\n"
+        printf "\n"
+        printf "%bNote: Some tools may require manual installation%b\n" "$YELLOW" "$NC"
+        printf "      See individual tool READMEs for details\n"
+        printf "\n"
     else
-        echo -e "${RED}Installation cancelled.${NC}"
+        printf "%bInstallation cancelled.%b\n" "$RED" "$NC"
         exit 0
     fi
 }

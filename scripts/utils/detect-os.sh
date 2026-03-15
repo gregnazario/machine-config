@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # OS Detection Utility
 # Detects the current operating system and prints standardized OS name
+# POSIX-compliant shell script
 
 # Supported OS names (lowercase):
 # - macos: macOS (any version)
@@ -25,20 +26,23 @@ detect_os() {
     fi
 
     # Check for WSL (Windows Subsystem for Linux)
-    if [ -f /proc/version ] && grep -qi microsoft /proc/version; then
+    if [ -f /proc/version ] && grep -qi microsoft /proc/version 2>/dev/null; then
         echo "windows"
         return 0
     fi
 
     # Check for MSYS2/Git Bash on Windows
-    if [ "$(uname -s)" = "MSYS_NT-" ] || [ "$(uname -s)" = "MINGW64_NT-" ]; then
-        echo "windows"
-        return 0
-    fi
+    case "$(uname -s)" in
+        MSYS_NT-*|MINGW64_NT-*)
+            echo "windows"
+            return 0
+            ;;
+    esac
 
     # Linux distribution detection
     if [ -f /etc/os-release ]; then
         # Parse /etc/os-release for distribution info
+        # Using shell source to read variables
         . /etc/os-release
 
         case "$ID" in
@@ -104,7 +108,7 @@ detect_os() {
     elif [ -f /etc/gentoo-release ]; then
         echo "gentoo"
         return 0
-    elif [ -f /etc/ubuntu-release ] || grep -q "Ubuntu" /etc/lsb-release 2>/dev/null; then
+    elif [ -f /etc/ubuntu-release ] || grep -q Ubuntu /etc/lsb-release 2>/dev/null; then
         echo "ubuntu"
         return 0
     elif [ -f /etc/void-release ]; then
@@ -145,7 +149,7 @@ detect_os() {
 
 # Get OS version (optional, more detailed)
 detect_os_version() {
-    local os=$(detect_os)
+    os=$(detect_os)
 
     case "$os" in
         macos)
@@ -154,57 +158,71 @@ detect_os_version() {
         fedora|ubuntu|arch|gentoo|void|oracle|rocky|alpine|windows|freebsd)
             if [ -f /etc/os-release ]; then
                 . /etc/os-release
-                echo "$VERSION_ID"
+                printf "%s" "$VERSION_ID"
             fi
             ;;
         rpi)
             if [ -f /etc/os-release ]; then
                 . /etc/os-release
-                echo "$VERSION_ID"
+                printf "%s" "$VERSION_ID"
             fi
             ;;
         *)
-            echo "unknown"
+            printf "unknown"
             ;;
     esac
 }
 
 # Get architecture
 detect_arch() {
-    local arch=$(uname -m)
+    arch=$(uname -m)
 
     case "$arch" in
         x86_64|amd64)
-            echo "x86_64"
+            printf "x86_64"
             ;;
         i386|i686)
-            echo "i386"
+            printf "i386"
             ;;
         aarch64|arm64)
-            echo "aarch64"
+            printf "aarch64"
             ;;
         armv7l|armv6l)
-            echo "arm"
+            printf "arm"
             ;;
         *)
-            echo "$arch"
+            printf "%s" "$arch"
             ;;
     esac
 }
 
 # Check if running on specific OS family
 is_debian_based() {
-    local os=$(detect_os)
-    [[ "$os" =~ ^(ubuntu|rpi)$ ]]
+    os=$(detect_os)
+    case "$os" in
+        ubuntu|rpi)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
 is_rpm_based() {
-    local os=$(detect_os)
-    [[ "$os" =~ ^(fedora|oracle|rocky)$ ]]
+    os=$(detect_os)
+    case "$os" in
+        fedora|oracle|rocky)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
 is_arch_based() {
-    local os=$(detect_os)
+    os=$(detect_os)
     [ "$os" = "arch" ]
 }
 
@@ -217,30 +235,35 @@ is_windows() {
 }
 
 is_bsd() {
-    local os=$(detect_os)
-    [[ "$os" =~ ^(freebsd)$ ]]
+    os=$(detect_os)
+    case "$os" in
+        freebsd)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
-# Export functions if sourced
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-    export -f detect_os
-    export -f detect_os_version
-    export -f detect_arch
-    export -f is_debian_based
-    export -f is_rpm_based
-    export -f is_arch_based
-    export -f is_macos
-    export -f is_windows
-    export -f is_bsd
-fi
-
 # Run detection if executed directly
-if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+# Check if script is being sourced or run directly
+# POSIX way to check if script is sourced:
+# Attempt to get caller's shell - if $0 equals the current file, it's not sourced
+_main() {
     OS=$(detect_os)
     VERSION=$(detect_os_version)
     ARCH=$(detect_arch)
 
-    echo "OS:      $OS"
-    echo "Version: $VERSION"
-    echo "Arch:    $ARCH"
-fi
+    printf "OS:      %s\n" "$OS"
+    printf "Version: %s\n" "$VERSION"
+    printf "Arch:    %s\n" "$ARCH"
+}
+
+# Only run main if script is executed directly (not sourced)
+# This is a heuristic that works in most cases
+case "$0" in
+    */detect-os.sh|*detect-os.sh)
+        _main
+        ;;
+esac
