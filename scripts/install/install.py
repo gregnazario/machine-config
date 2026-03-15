@@ -1699,11 +1699,9 @@ if HAS_CURSES:
 			"""Handle keyboard/mouse input"""
 			action = None
 
-			# Debug: log key events (temporary)
-			if event != -1:  # -1 is timeout/none
-				try:
-					# Try to show the key code in the status line
-					height, width = self.stdscr.getmaxyx()
+			# Debug: log key events to file
+			try:
+				with open('/tmp/tui_keys.log', 'a') as f:
 					key_name = {
 						curses.KEY_UP: 'KEY_UP',
 						curses.KEY_DOWN: 'KEY_DOWN',
@@ -1719,13 +1717,10 @@ if HAS_CURSES:
 						127: 'BACKSPACE',
 						3: 'CTRL-C',
 						4: 'CTRL-D',
-					}.get(event, f'chr({event})' if event < 256 else str(event))
-					try:
-						self.stdscr.addstr(height - 2, 2, f"Key: {key_name:15s} Code: {event:4d} ", self.BLUE)
-					except curses.error:
-						pass
-				except:
-					pass
+					}.get(event, f'chr({event})={chr(event) if 32 <= event < 127 else "?"}' if event < 256 else str(event))
+					f.write(f"Key: {key_name:20s} Code: {event:4d}\n")
+			except:
+				pass
 
 			# Handle mouse
 			if event == curses.KEY_MOUSE:
@@ -1790,6 +1785,15 @@ if HAS_CURSES:
 			elif event == ord('q') or event == ord('Q'):
 				return 'quit'
 
+			# ESC key to go back
+			elif event == 27:  # ESC
+				if self.current_screen == 'tools':
+					return 'back'
+				elif self.current_screen == 'categories':
+					return 'back'
+				else:
+					return 'quit'
+
 			# Ctrl-C or Ctrl-D to quit
 			elif event == 3:  # Ctrl-C
 				return 'quit'
@@ -1834,15 +1838,15 @@ if HAS_CURSES:
 					action = 'done'
 					return action
 
-			# Arrow keys for navigation
-			elif event == curses.KEY_UP or event == 259 or event == 565:
+			# Arrow keys for navigation - try multiple codes
+			elif event in (curses.KEY_UP, 259, 565, 0x103):
 				self.cursor_pos = max(0, self.cursor_pos - 1)
-				return 'refresh'  # Signal to redraw
+				return 'refresh'
 
-			elif event == curses.KEY_DOWN or event == 258 or event == 524:
+			elif event in (curses.KEY_DOWN, 258, 524, 0x102):
 				if self.max_items > 0:
 					self.cursor_pos = min(self.max_items - 1, self.cursor_pos + 1)
-				return 'refresh'  # Signal to redraw
+				return 'refresh'
 
 			# Space to toggle checkboxes
 			elif event == ord(' '):
