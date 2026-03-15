@@ -14,6 +14,7 @@ NC='\033[0m'
 # Default values
 SKIP_PYTHON_CHECK=""
 AUTO_INSTALL_PYTHON=""
+USE_TUI=""
 
 # Parse arguments
 while [ $# -gt 0 ]; do
@@ -272,7 +273,7 @@ printf "%b✓ Python %s detected%b\n" "$GREEN" "$PYTHON_VERSION" "$NC"
 # Check if TUI mode is requested
 if [ "$USE_TUI" = "--tui" ]; then
 	printf "%bStarting TUI installer...%b\n\n" "$GREEN" "$NC"
-	exec "$PYTHON_CMD" "$SCRIPT_DIR/install/install_tui.py" "$@"
+	exec "$PYTHON_CMD" "$SCRIPT_DIR/install/install.py" "--tui" "$@"
 else
 	printf "%bStarting interactive installer...%b\n\n" "$GREEN" "$NC"
 	exec "$PYTHON_CMD" "$SCRIPT_DIR/install/install.py" "$@"

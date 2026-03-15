@@ -11,6 +11,13 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Set, Optional
 
+# Try to import curses for TUI mode
+try:
+	import curses
+	HAS_CURSES = True
+except ImportError:
+	HAS_CURSES = False
+
 # Parse command-line arguments
 def parse_args():
 	parser = argparse.ArgumentParser(
@@ -61,6 +68,12 @@ For more information, see the README.
 		'--dry-run',
 		action='store_true',
 		help='Show what would be installed without actually installing'
+	)
+
+	parser.add_argument(
+		'--tui',
+		action='store_true',
+		help='Use terminal UI with mouse support'
 	)
 
 	parser.add_argument(
@@ -653,10 +666,563 @@ def get_tools_from_cli(tools_str: str, categories_str: str) -> Set[str]:
 
     return selected_tools
 
+# TUI Installer (only available if curses is available)
+if HAS_CURSES:
+	class TUIInstaller:
+		def __init__(self, stdscr):
+			self.stdscr = stdscr
+			self.current_os = detect_os()
+			self.selected_tools = set()
+			self.current_screen = 'welcome'
+			self.categories_list = list(CATEGORIES.keys())
+			self.tool_selections = {}  # category -> set of selected tools
+
+			# Initialize tool selections (all unselected)
+			for category in CATEGORIES:
+				self.tool_selections[category] = set()
+
+			# Set up curses
+			curses.curs_set(0)  # Hide cursor
+			curses.noecho()
+			self.stdscr.keypad(1)
+
+			# Initialize colors
+			curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+			curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+			curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+			curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+			curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+			curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE)
+			curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_CYAN)
+
+			self.CYAN = curses.color_pair(1) | curses.A_BOLD
+			self.GREEN = curses.color_pair(2) | curses.A_BOLD
+			self.YELLOW = curses.color_pair(3) | curses.A_BOLD
+			self.BLUE = curses.color_pair(4)
+			self.MAGENTA = curses.color_pair(5) | curses.A_BOLD
+			self.SELECTED = curses.color_pair(6)
+			self.SELECTED_CYAN = curses.color_pair(7)
+
+		def clear_screen(self):
+			"""Clear the screen"""
+			self.stdscr.clear()
+			self.stdscr.refresh()
+
+		def draw_header(self, title: str):
+			"""Draw header bar"""
+			height, width = self.stdscr.getmaxyx()
+			try:
+				self.stdscr.addstr(0, 0, " " * width, self.MAGENTA)
+				self.stdscr.addstr(0, 2, f" {title} ", self.MAGENTA)
+			except curses.error:
+				pass
+			return 2
+
+		def draw_footer(self, instructions: str):
+			"""Draw footer with instructions"""
+			height, width = self.stdscr.getmaxyx()
+			try:
+				self.stdscr.addstr(height - 1, 0, " " * width, self.BLUE)
+				self.stdscr.addstr(height - 1, 2, f" {instructions} ", self.BLUE)
+			except curses.error:
+				pass
+
+		def draw_button(self, y: int, x: int, text: str, selected: bool = False):
+			"""Draw a clickable button"""
+			if selected:
+				color = self.SELECTED
+			else:
+				color = self.CYAN
+
+			button_text = f"[ {text} ]"
+			try:
+				self.stdscr.addstr(y, x, button_text, color)
+			except curses.error:
+				pass
+
+			return len(button_text)
+
+		def screen_welcome(self):
+			"""Welcome screen"""
+			self.current_screen = 'welcome'
+			self.clear_screen()
+
+			line = self.draw_header("Greg's Dotfiles Installer - TUI Mode")
+			line += 2
+
+			welcome_text = [
+				f"Detected OS: {self.current_os.capitalize()}",
+				"",
+				"Welcome to the interactive dotfiles installer!",
+				"",
+				"Features:",
+				"  • Mouse support - click buttons to navigate",
+				"  • Arrow keys and Enter also work",
+				"  • Toggle tools with single click",
+				"  • Visual selection status",
+				"",
+				"Click 'Start' or press Enter to continue",
+				"Press 'q' to quit at any time",
+			]
+
+			for text in welcome_text:
+				try:
+					self.stdscr.addstr(line, 4, text, self.GREEN if "Detected OS" in text else self.CYAN)
+				except curses.error:
+					pass
+				line += 1
+
+			# Draw button
+			line += 2
+			self.draw_button(line, 4, "Start", True)
+
+			self.draw_footer("Enter: Start | q: Quit")
+			return line
+
+		def screen_profiles(self):
+			"""Profile selection screen"""
+			self.current_screen = 'profiles'
+			self.clear_screen()
+
+			line = self.draw_header("Select Installation Profile")
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Choose a profile:", self.CYAN)
+			except curses.error:
+				pass
+			line += 2
+
+			profile_list = list(PROFILES.keys())
+			profiles_with_custom = profile_list + ['custom']
+
+			self.profile_buttons = []
+
+			for idx, profile_key in enumerate(profiles_with_custom):
+				button_y = line + idx * 2
+
+				if profile_key == 'custom':
+					name = "Custom"
+					desc = "Choose specific tools manually"
+				else:
+					profile = PROFILES[profile_key]
+					name = profile['name']
+					desc = profile['description']
+
+				try:
+					self.stdscr.addstr(button_y, 6, name, self.CYAN | curses.A_BOLD)
+					self.stdscr.addstr(button_y + 1, 8, desc, self.GREEN)
+				except curses.error:
+					pass
+
+				# Store button position
+				self.profile_buttons.append({
+					'profile': profile_key,
+					'y': button_y,
+					'x': 6
+				})
+
+			# Draw buttons at bottom
+			button_y = button_y + 2
+			for idx in range(min(len(profiles_with_custom), 6)):
+				self.draw_button(button_y, 6 + idx * 18, str(idx + 1), idx == 0)
+
+			self.draw_footer("1-6: Select profile | q: Quit")
+			return {'screen': 'profiles', 'profiles': profiles_with_custom}
+
+		def screen_categories(self):
+			"""Category selection screen"""
+			self.current_screen = 'categories'
+			self.clear_screen()
+
+			line = self.draw_header("Select Tools by Category")
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Click category to edit tools:", self.CYAN)
+			except curses.error:
+				pass
+			line += 2
+
+			self.category_buttons = []
+
+			for idx, category in enumerate(self.categories_list):
+				cat_y = line + idx
+				desc = CATEGORIES[category]['description']
+				tools = CATEGORIES[category]['tools']
+				selected = sum(1 for t in tools if t in self.selected_tools)
+				total = len(tools)
+
+				# Selection status
+				if selected == total:
+					status = f"[All]"
+					color = self.GREEN
+				elif selected > 0:
+					status = f"[{selected}/{total}]"
+					color = self.YELLOW
+				else:
+					status = f"[None]"
+					color = self.CYAN
+
+				try:
+					self.stdscr.addstr(cat_y, 6, desc, self.CYAN | curses.A_BOLD)
+					self.stdscr.addstr(cat_y, 35, status, color | curses.A_BOLD)
+				except curses.error:
+					pass
+
+				# Store button position
+				self.category_buttons.append({
+					'category': category,
+					'y': cat_y,
+					'x': 6,
+					'width': len(desc)
+				})
+
+			# Action buttons
+			button_y = cat_y + 2
+			self.draw_button(button_y, 6, "Accept", True)
+			self.draw_button(button_y, 22, "Back")
+
+			self.draw_footer("Click category to edit | Accept when done | q: Quit")
+			return {'screen': 'categories', 'button_y': button_y}
+
+		def screen_tools(self, category: str):
+			"""Tool selection within a category"""
+			self.current_screen = 'tools'
+			self.clear_screen()
+
+			desc = CATEGORIES[category]['description']
+			tools = CATEGORIES[category]['tools']
+
+			line = self.draw_header(desc)
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Click tools to toggle:", self.CYAN)
+			except curses.error:
+				pass
+			line += 2
+
+			self.tool_buttons = []
+
+			# Two columns
+			for idx, tool in enumerate(tools):
+				col = idx // 10
+				row = idx % 10
+				y = line + row
+				x = 8 + col * 28
+
+				is_selected = tool in self.tool_selections[category]
+				status = "[✓]" if is_selected else "[ ]"
+				color = self.GREEN if is_selected else self.CYAN
+
+				try:
+					self.stdscr.addstr(y, x, status, color | curses.A_BOLD)
+					self.stdscr.addstr(y, x + 5, tool, self.GREEN)
+				except curses.error:
+					pass
+
+				# Store button position
+				self.tool_buttons.append({
+					'tool': tool,
+					'y': y,
+					'x': x,
+					'width': len(tool) + 5
+				})
+
+			# Action buttons
+			button_y = y + 2
+			self.draw_button(button_y, 8, "All")
+			self.draw_button(button_y, 22, "None")
+			self.draw_button(button_y, 36, "Done", True)
+
+			self.draw_footer("Click tool to toggle | Done when finished | q: Quit")
+			return {'screen': 'tools', 'category': category, 'button_y': button_y}
+
+		def screen_confirm(self):
+			"""Confirmation screen"""
+			self.current_screen = 'confirm'
+			self.clear_screen()
+
+			line = self.draw_header("Confirm Installation")
+			line += 2
+
+			try:
+				self.stdscr.addstr(line, 4, "Summary of selections:", self.CYAN | curses.A_BOLD)
+			except curses.error:
+				pass
+			line += 1
+			try:
+				self.stdscr.addstr(line, 4, f"Total tools: {len(self.selected_tools)}", self.GREEN | curses.A_BOLD)
+			except curses.error:
+				pass
+			line += 2
+
+			# Group tools by category
+			tools_by_category = {}
+			for tool in self.selected_tools:
+				for category, data in CATEGORIES.items():
+					if tool in data['tools']:
+						if category not in tools_by_category:
+							tools_by_category[category] = []
+						tools_by_category[category].append(tool)
+						break
+
+			# Display selections (compact format)
+			for category in sorted(tools_by_category.keys()):
+				cat_desc = CATEGORIES[category]['description']
+				tools = sorted(tools_by_category[category])
+
+				try:
+					self.stdscr.addstr(line, 4, f"{cat_desc}:", self.CYAN | curses.A_BOLD)
+				except curses.error:
+					pass
+				line += 1
+
+				# Truncate if too long
+				tool_line = ", ".join(tools)
+				if len(tool_line) > 60:
+					tool_line = tool_line[:57] + "..."
+				try:
+					self.stdscr.addstr(line, 6, tool_line, self.GREEN)
+				except curses.error:
+					pass
+				line += 1
+
+			# Buttons
+			line += 1
+			self.draw_button(line, 6, "Install", True)
+			self.draw_button(line, 22, "Cancel")
+
+			self.draw_footer("Click Install to proceed | Cancel to abort | q: Quit")
+			return {'screen': 'confirm', 'button_y': line}
+
+		def handle_input(self, event, screen_data):
+			"""Handle keyboard/mouse input"""
+			action = None
+
+			# Handle mouse
+			if event == curses.KEY_MOUSE:
+				try:
+					_, mx, my, _, bstate = curses.getmouse()
+					# Check for left click
+					if bstate & curses.BUTTON1_CLICKED:
+						# Welcome screen
+						if self.current_screen == 'welcome':
+							if my == screen_data.get('button_line', 0) + 2:
+								action = 'next'
+
+						# Profiles screen
+						elif self.current_screen == 'profiles':
+							for btn in self.profile_buttons:
+								if btn['y'] == my and 6 <= mx <= 30:
+									action = f'profile_{btn["profile"]}'
+
+						# Categories screen
+						elif self.current_screen == 'categories':
+							for btn in self.category_buttons:
+								if (btn['y'] == my and
+									btn['x'] <= mx <= btn['x'] + btn['width']):
+									action = f'category_{btn["category"]}'
+
+							button_y = screen_data.get('button_y', 0)
+							if my == button_y:
+								if 6 <= mx <= 15:  # Accept
+									action = 'accept'
+								elif 22 <= mx <= 29:  # Back
+									action = 'back'
+
+						# Tools screen
+						elif self.current_screen == 'tools':
+							category = screen_data.get('category', '')
+							for btn in self.tool_buttons:
+								if (btn['y'] == my and
+									btn['x'] <= mx <= btn['x'] + btn['width']):
+									action = f'toggle_{btn["tool"]}'
+
+							button_y = screen_data.get('button_y', 0)
+							if my == button_y:
+								if 8 <= mx <= 14:  # All
+									action = 'select_all'
+								elif 22 <= mx <= 29:  # None
+									action = 'select_none'
+								elif 36 <= mx <=	43:  # Done
+									action = 'done'
+
+						# Confirm screen
+						elif self.current_screen == 'confirm':
+							button_y = screen_data.get('button_y', 0)
+							if my == button_y:
+								if 6 <= mx <= 16:  # Install
+									action = 'install'
+								elif 22 <= mx <= 31:  # Cancel
+									action = 'cancel'
+				except curses.error:
+					pass
+
+			# Handle keyboard
+			elif event == ord('q') or event == ord('Q'):
+				return 'quit'
+
+			elif event == curses.KEY_ENTER or event == 10 or event == 13:
+				if self.current_screen == 'welcome':
+					action = 'next'
+				elif self.current_screen == 'categories':
+					action = 'accept'
+				elif self.current_screen == 'tools':
+					action = 'done'
+				elif self.current_screen == 'confirm':
+					action = 'install'
+
+			return action
+
+		def run(self):
+			"""Main TUI loop"""
+			screen_data = self.screen_welcome()
+			selected_profile = None
+
+			while True:
+				# Draw current screen
+				if self.current_screen == 'welcome':
+					screen_data = self.screen_welcome()
+				elif self.current_screen == 'profiles':
+					screen_data = self.screen_profiles()
+				elif self.current_screen == 'categories':
+					screen_data = self.screen_categories()
+				elif self.current_screen == 'tools':
+					screen_data = self.screen_tools(screen_data.get('category', ''))
+				elif self.current_screen == 'confirm':
+					screen_data = self.screen_confirm()
+
+				self.stdscr.refresh()
+
+				# Get input
+				event = self.stdscr.getch()
+				action = self.handle_input(event, screen_data)
+
+				# Handle action
+				if action == 'quit':
+					return None
+
+				elif action == 'next' or action == 'profile_1':
+					selected_profile = 'minimal'
+					self.selected_tools = get_tools_from_profile(selected_profile)
+					# Initialize selections
+					for category in CATEGORIES:
+						self.tool_selections[category] = set()
+					for tool in self.selected_tools:
+						for category, data in CATEGORIES.items():
+							if tool in data['tools']:
+								self.tool_selections[category].add(tool)
+								break
+					screen_data = self.screen_categories()
+
+				elif action == 'back':
+					self.selected_tools = set()
+					screen_data = self.screen_profiles()
+
+				elif action.startswith('profile_'):
+					profile_key = action.split('_', 1)[1]
+					if profile_key != 'custom':
+						selected_profile = profile_key
+						self.selected_tools = get_tools_from_profile(profile_key)
+						# Initialize selections
+						for category in CATEGORIES:
+							self.tool_selections[category] = set()
+						for tool in self.selected_tools:
+							for category, data in CATEGORIES.items():
+								if tool in data['tools']:
+									self.tool_selections[category].add(tool)
+									break
+					else:
+						selected_profile = None
+						self.selected_tools = set()
+					screen_data = self.screen_categories()
+
+				elif action.startswith('category_'):
+					category = action.split('_', 1)[1]
+					screen_data = self.screen_tools(category)
+
+				elif action.startswith('toggle_'):
+					tool = action.split('_', 1)[1]
+					category = screen_data.get('category', '')
+					if tool in self.tool_selections[category]:
+						self.tool_selections[category].remove(tool)
+						self.selected_tools.discard(tool)
+					else:
+						self.tool_selections[category].add(tool)
+						self.selected_tools.add(tool)
+
+				elif action == 'select_all':
+					category = screen_data.get('category', '')
+					for tool in CATEGORIES[category]['tools']:
+						self.tool_selections[category].add(tool)
+						self.selected_tools.add(tool)
+
+				elif action == 'select_none':
+					category = screen_data.get('category', '')
+					for tool in CATEGORIES[category]['tools']:
+						self.tool_selections[category].discard(tool)
+						self.selected_tools.discard(tool)
+
+				elif action == 'done':
+					screen_data = self.screen_categories()
+
+				elif action == 'accept':
+					if self.selected_tools:
+						screen_data = self.screen_confirm()
+
+				elif action == 'install':
+					return self.selected_tools
+
+				elif action == 'cancel':
+					screen_data = self.screen_categories()
+
+def run_tui():
+	"""Run TUI installer"""
+	if not HAS_CURSES:
+		print("Error: TUI mode requires curses library")
+		print("Install it with: pip install windows-curses  (on Windows)")
+		print("It should be available by default on Linux/macOS")
+		sys.exit(1)
+
+	selected_tools = curses.wrapper(lambda stdscr: TUIInstaller(stdscr).run())
+
+	if selected_tools:
+		# Perform installation
+		current_os = detect_os()
+		repo_root = Path(__file__).parent.parent.parent
+
+		print(f"\nInstalling {len(selected_tools)} tools...\n")
+
+		results = install_tools(selected_tools, current_os, repo_root)
+
+		# Print summary
+		success_count = sum(1 for s in results.values() if s)
+		fail_count = len(results) - success_count
+
+		print(f"\n{'='*60}")
+		print("Installation Complete")
+		print(f"{'='*60}\n")
+		print(f"  Tools to configure: {len(selected_tools)}")
+		print(f"  Categories installed: {success_count}")
+		print(f"  Categories failed: {fail_count}\n")
+
+		if fail_count > 0:
+			print("Note: Some categories failed to install.")
+			print("      See output above for details.\n")
+	else:
+		print("\nInstallation cancelled.")
+
 def main():
     """Main installation flow."""
     # Parse command-line arguments
     args = parse_args()
+
+    # Check if TUI mode is requested
+    if args.tui:
+        run_tui()
+        return
 
     # Detect OS
     current_os = detect_os()
