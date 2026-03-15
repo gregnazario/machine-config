@@ -16,9 +16,20 @@ try:
 	import curses
 	HAS_CURSES = True
 
-	# Detect terminal type
+	# Detect terminal type using multiple methods
 	TERM = os.environ.get('TERM', 'xterm-256color')
+
+	# Method 1: Check TERM variable
 	IS_GHOSTTY = 'ghostty' in TERM.lower()
+
+	# Method 2: Check TERM_PROGRAM (set by some terminals)
+	term_program = os.environ.get('TERM_PROGRAM', '').lower()
+	IS_GHOSTTY = IS_GHOSTTY or 'ghostty' in term_program
+
+	# Method 3: Check GHOSTTY_RESOURCES env var (set by Ghostty app)
+	ghostty_resources = os.environ.get('GHOSTTY_RESOURCES', '')
+	IS_GHOSTTY = IS_GHOSTTY or bool(ghostty_resources)
+
 except ImportError:
 	HAS_CURSES = False
 	IS_GHOSTTY = False
@@ -745,6 +756,17 @@ if HAS_CURSES:
 				# Fallback to ASCII
 				return False
 
+		def get_terminal_info(self):
+			"""Get terminal detection info for debugging"""
+			info = {
+				'TERM': TERM,
+				'IS_GHOSTTY': IS_GHOSTTY if HAS_CURSES else 'N/A',
+				'term_program': os.environ.get('TERM_PROGRAM', 'not set'),
+				'mouse_enabled': getattr(self, 'mouse_enabled', False),
+				'unicode_support': getattr(self, 'use_unicode_cursor', False),
+			}
+			return info
+
 		def _get_cursor_char(self):
 			"""Get cursor character based on terminal support"""
 			if self.use_unicode_cursor:
@@ -842,6 +864,7 @@ if HAS_CURSES:
 
 			welcome_text = [
 				f"Detected OS: {self.current_os.capitalize()}",
+				f"Terminal: {TERM}",
 				"",
 				"Welcome to the interactive dotfiles installer!",
 				"",
@@ -857,7 +880,7 @@ if HAS_CURSES:
 
 			for text in welcome_text:
 				try:
-					color = self.GREEN if "Detected OS" in text else self.CYAN
+					color = self.GREEN if "Detected OS" in text or "Terminal:" in text else self.CYAN
 					self.stdscr.addstr(line, 4, text, color)
 				except curses.error:
 					pass
