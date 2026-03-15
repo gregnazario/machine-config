@@ -1844,7 +1844,72 @@ def run_tui():
 		print("It should be available by default on Linux/macOS")
 		sys.exit(1)
 
+	# Save original TERM
+	original_term = os.environ.get('TERM', 'xterm-256color')
+
+	# Function to check if terminfo exists
+	def check_terminfo(term_value):
+		"""Check if terminfo for given TERM exists"""
+		try:
+			curses.setupterm(term_value)
+			return True
+		except curses.error:
+			return False
+
+	# Check if current terminfo exists
+	if not check_terminfo(original_term):
+		# Terminfo not found, provide helpful message
+		print(f"Warning: Terminal terminfo not found for '{original_term}'")
+		print()
+
+		# Check if it's Ghostty
+		if 'ghostty' in original_term.lower():
+			print("Ghostty detected but terminfo not installed.")
+			print()
+			print("Options:")
+			print("  1. (Recommended) Auto-fix with fallback terminfo")
+			print("  2. Install Ghostty's terminfo (see: https://github.com/mitchellh/ghostty)")
+			print()
+			print("Auto-fixing to use xterm-256color terminfo...")
+			print()
+
+		elif 'warp' in original_term.lower():
+			print("Warp detected but terminfo not installed.")
+			print()
+			print("Auto-fixing to use xterm-256color terminfo...")
+			print()
+
+		else:
+			print(f"Current TERM: {original_term}")
+			print()
+			print("Auto-fixing to use xterm-256color terminfo...")
+			print()
+
+		# Set fallback TERM in environment
+		os.environ['TERM'] = 'xterm-256color'
+
+		# Verify fallback works
+		if not check_terminfo('xterm-256color'):
+			print("Error: Even xterm-256color terminfo not found!")
+			print("Your system may be missing ncurses terminfo files.")
+			print()
+			print("Install terminfo on:")
+			print("  Fedora: sudo dnf install ncurses-term")
+			print("  Ubuntu: sudo apt install ncurses-term")
+			print("  Arch:   sudo pacman -S ncurses")
+			print()
+			print("Or use a different terminal emulator.")
+			sys.exit(1)
+
+		print("✓ Terminfo fallback successful")
+		print()
+
+	# If we get here, terminfo is available (either original or fallback)
+	# Now call curses.wrapper which will use os.environ['TERM']
 	selected_tools = curses.wrapper(lambda stdscr: TUIInstaller(stdscr).run())
+
+	# Rest of function...
+	# (the code after the wrapper remains the same)
 
 	if selected_tools:
 		# Perform installation
