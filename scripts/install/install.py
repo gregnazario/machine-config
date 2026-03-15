@@ -1392,19 +1392,9 @@ if HAS_CURSES:
 				if action == 'quit':
 					return None
 
-				elif action == 'next' or action == 'profile_1':
-					selected_profile = 'minimal'
-					self.selected_tools = get_tools_from_profile(selected_profile)
-					# Initialize selections
-					for category in CATEGORIES:
-						self.tool_selections[category] = set()
-					for tool in self.selected_tools:
-						for category, data in CATEGORIES.items():
-							if tool in data['tools']:
-								self.tool_selections[category].add(tool)
-								break
-					self.cursor_pos = 0
-					screen_data = self.screen_categories()
+				elif action == 'next':
+					# From welcome screen, go to profile selection
+					screen_data = self.screen_profiles()
 
 				elif action == 'back':
 					self.selected_tools = set()
@@ -2048,18 +2038,9 @@ if HAS_CURSES:
 				if action == 'quit':
 					return None
 
-				elif action == 'next' or action == 'profile_1':
-					selected_profile = 'minimal'
-					self.selected_tools = get_tools_from_profile(selected_profile)
-					# Initialize selections
-					for category in CATEGORIES:
-						self.tool_selections[category] = set()
-					for tool in self.selected_tools:
-						for category, data in CATEGORIES.items():
-							if tool in data['tools']:
-								self.tool_selections[category].add(tool)
-								break
-					screen_data = self.screen_categories()
+				elif action == 'next':
+					# From welcome screen, go to profile selection
+					screen_data = self.screen_profiles()
 
 				elif action == 'back':
 					self.selected_tools = set()
