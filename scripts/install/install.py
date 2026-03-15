@@ -935,7 +935,7 @@ if HAS_CURSES:
 			self.draw_button(line, 4, "Start", is_cursor=(self.cursor_pos == 0))
 
 			self.draw_footer("↑↓: Navigate | Enter: Start | q: Quit")
-			return line
+			return {'screen': 'welcome', 'button_line': line}
 
 		def screen_profiles(self):
 			"""Profile selection screen"""
