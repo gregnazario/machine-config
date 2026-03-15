@@ -11,6 +11,16 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Set, Optional
 
+
+def get_version():
+	"""Read version from VERSION file."""
+	version_file = Path(__file__).parent.parent.parent / 'VERSION'
+	try:
+		with open(version_file, 'r') as f:
+			return f.read().strip()
+	except Exception:
+		return 'unknown'
+
 # Try to import curses for TUI mode
 try:
 	import curses
@@ -97,6 +107,12 @@ For more information, see the README.
 		'--tui',
 		action='store_true',
 		help='Use terminal UI with mouse support'
+	)
+
+	parser.add_argument(
+		'--version', '-v',
+		action='version',
+		version=f'%(prog)s {get_version()}'
 	)
 
 	parser.add_argument(
@@ -333,8 +349,10 @@ def print_header():
     """Print the installer header."""
     clear_screen()
 
+    version = get_version()
     print(f"{Colors.CYAN}╔════════════════════════════════════════════════════════════╗{Colors.NC}")
     print(f"{Colors.CYAN}║{Colors.NC}        {Colors.GREEN}Greg's Dotfiles - Interactive Installer{Colors.NC}           {Colors.CYAN}║{Colors.NC}")
+    print(f"{Colors.CYAN}║{Colors.NC}                        {Colors.YELLOW}v{version}{Colors.NC}                              {Colors.CYAN}║{Colors.NC}")
     print(f"{Colors.CYAN}╚════════════════════════════════════════════════════════════╝{Colors.NC}")
     print()
 
@@ -344,6 +362,7 @@ def print_system_info(current_os: str):
     print(f"  OS:        {Colors.GREEN}{current_os.capitalize()}{Colors.NC}")
     print(f"  Hostname:  {Colors.GREEN}{os.uname().nodename}{Colors.NC}")
     print(f"  User:      {Colors.GREEN}{os.getenv('USER', 'unknown')}{Colors.NC}")
+    print(f"  Version:   {Colors.GREEN}{get_version()}{Colors.NC}")
     print()
 
 def welcome(current_os: str):
@@ -889,6 +908,7 @@ if HAS_CURSES:
 			welcome_text = [
 				f"Detected OS: {self.current_os.capitalize()}",
 				f"Terminal: {TERM}",
+				f"Version: {get_version()}",
 				"",
 				"Welcome to the interactive dotfiles installer!",
 				"",
