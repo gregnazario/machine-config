@@ -1,0 +1,17 @@
+# shfmt configuration
+# See: https://github.com/mvdan/sh
+
+# Indentation style: 0=tabs, 1=spaces, 2=tabs + indent (default: 2)
+indent=0
+
+# Binary operators may start a line (default: true)
+binary-next-line=false
+
+# Switch cases should be indented (default: false)
+case-indent=true
+
+# Function opening brace placement (default: newline)
+func-next-line=false
+
+# Redirection operators should be followed by a space (default: false)
+space-redirections=true

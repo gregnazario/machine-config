@@ -15,288 +15,288 @@ NC='\033[0m'
 
 # Logging functions
 log_info() {
-    printf "%b[INFO]%b %s\n" "$BLUE" "$NC" "$1"
+	printf "%b[INFO]%b %s\n" "$BLUE" "$NC" "$1"
 }
 
 log_success() {
-    printf "%b[✓]%b %s\n" "$GREEN" "$NC" "$1"
+	printf "%b[✓]%b %s\n" "$GREEN" "$NC" "$1"
 }
 
 log_warning() {
-    printf "%b[!]%b %s\n" "$YELLOW" "$NC" "$1"
+	printf "%b[!]%b %s\n" "$YELLOW" "$NC" "$1"
 }
 
 log_error() {
-    printf "%b[✗]%b %s\n" "$RED" "$NC" "$1" >&2
+	printf "%b[✗]%b %s\n" "$RED" "$NC" "$1" >&2
 }
 
 log_step() {
-    printf "\n"
-    printf "%b→ %s%b\n" "$CYAN" "$1" "$NC"
+	printf "\n"
+	printf "%b→ %s%b\n" "$CYAN" "$1" "$NC"
 }
 
 # Check if command exists
 command_exists() {
-    command -v "$1" >/dev/null 2>&1
+	command -v "$1" >/dev/null 2>&1
 }
 
 # Check if package is installed (Linux)
 package_installed() {
-    package="$1"
-    os=$(detect_os)
+	package="$1"
+	os=$(detect_os)
 
-    case "$os" in
-        macos)
-            brew list "$1" >/dev/null 2>&1
-            ;;
-        fedora|oracle|rocky)
-            rpm -q "$1" >/dev/null 2>&1
-            ;;
-        ubuntu|rpi)
-            dpkg -l "$1" 2>/dev/null | grep -q '^ii'
-            ;;
-        arch)
-            pacman -Qi "$1" >/dev/null 2>&1
-            ;;
-        void)
-            xbps-query "$1" >/dev/null 2>&1
-            ;;
-        gentoo)
-            equery list "$1" >/dev/null 2>&1
-            ;;
-        alpine)
-            apk info -e "$1" >/dev/null 2>&1
-            ;;
-        freebsd)
-            pkg info "$1" >/dev/null 2>&1
-            ;;
-        windows)
-            # Check Windows package managers or PATH
-            command_exists "$1"
-            ;;
-        *)
-            return 1
-            ;;
-    esac
+	case "$os" in
+	macos)
+		brew list "$1" >/dev/null 2>&1
+		;;
+	fedora | oracle | rocky)
+		rpm -q "$1" >/dev/null 2>&1
+		;;
+	ubuntu | rpi)
+		dpkg -l "$1" 2>/dev/null | grep -q '^ii'
+		;;
+	arch)
+		pacman -Qi "$1" >/dev/null 2>&1
+		;;
+	void)
+		xbps-query "$1" >/dev/null 2>&1
+		;;
+	gentoo)
+		equery list "$1" >/dev/null 2>&1
+		;;
+	alpine)
+		apk info -e "$1" >/dev/null 2>&1
+		;;
+	freebsd)
+		pkg info "$1" >/dev/null 2>&1
+		;;
+	windows)
+		# Check Windows package managers or PATH
+		command_exists "$1"
+		;;
+	*)
+		return 1
+		;;
+	esac
 }
 
 # Install package (if not already installed)
 ensure_package() {
-    package="$1"
-    os=$(detect_os)
+	package="$1"
+	os=$(detect_os)
 
-    if package_installed "$package"; then
-        log_info "$package already installed"
-        return 0
-    fi
+	if package_installed "$package"; then
+		log_info "$package already installed"
+		return 0
+	fi
 
-    log_step "Installing $package..."
+	log_step "Installing $package..."
 
-    case "$os" in
-        macos)
-            if command_exists brew; then
-                brew install "$package"
-            else
-                log_error "Homebrew not found. Please install from https://brew.sh"
-                return 1
-            fi
-            ;;
-        fedora|oracle|rocky)
-            sudo dnf install -y "$package"
-            ;;
-        ubuntu|rpi)
-            sudo apt update && sudo apt install -y "$package"
-            ;;
-        arch)
-            sudo pacman -S --noconfirm "$package"
-            ;;
-        void)
-            sudo xbps-install -Sy "$package"
-            ;;
-        gentoo)
-            sudo emerge --quiet "$package"
-            ;;
-        alpine)
-            sudo apk add "$package"
-            ;;
-        freebsd)
-            sudo pkg install -y "$package"
-            ;;
-        windows)
-            log_warning "Please install $package manually on Windows"
-            ;;
-        *)
-            log_error "Unsupported OS: $os"
-            return 1
-            ;;
-    esac
+	case "$os" in
+	macos)
+		if command_exists brew; then
+			brew install "$package"
+		else
+			log_error "Homebrew not found. Please install from https://brew.sh"
+			return 1
+		fi
+		;;
+	fedora | oracle | rocky)
+		sudo dnf install -y "$package"
+		;;
+	ubuntu | rpi)
+		sudo apt update && sudo apt install -y "$package"
+		;;
+	arch)
+		sudo pacman -S --noconfirm "$package"
+		;;
+	void)
+		sudo xbps-install -Sy "$package"
+		;;
+	gentoo)
+		sudo emerge --quiet "$package"
+		;;
+	alpine)
+		sudo apk add "$package"
+		;;
+	freebsd)
+		sudo pkg install -y "$package"
+		;;
+	windows)
+		log_warning "Please install $package manually on Windows"
+		;;
+	*)
+		log_error "Unsupported OS: $os"
+		return 1
+		;;
+	esac
 
-    log_success "$package installed"
+	log_success "$package installed"
 }
 
 # Create symlink with backup
 safe_symlink() {
-    source="$1"
-    target="$2"
+	source="$1"
+	target="$2"
 
-    # Create target directory if it doesn't exist
-    target_dir=$(dirname "$target")
-    mkdir -p "$target_dir"
+	# Create target directory if it doesn't exist
+	target_dir=$(dirname "$target")
+	mkdir -p "$target_dir"
 
-    # Backup existing file/symlink
-    if [ -e "$target" ] && [ ! -L "$target" ]; then
-        backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
-        log_warning "Backing up existing $target to $backup"
-        mv "$target" "$backup"
-    fi
+	# Backup existing file/symlink
+	if [ -e "$target" ] && [ ! -L "$target" ]; then
+		backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
+		log_warning "Backing up existing $target to $backup"
+		mv "$target" "$backup"
+	fi
 
-    # Create symlink
-    ln -sf "$source" "$target"
-    log_success "Linked $target → $source"
+	# Create symlink
+	ln -sf "$source" "$target"
+	log_success "Linked $target → $source"
 }
 
 # Merge configuration files
 # Usage: merge_config <base_file> <os_override_file> <output_file>
 merge_config() {
-    base_file="$1"
-    os_file="$2"
-    output_file="$3"
+	base_file="$1"
+	os_file="$2"
+	output_file="$3"
 
-    mkdir -p "$(dirname "$output_file")"
+	mkdir -p "$(dirname "$output_file")"
 
-    if [ ! -f "$base_file" ]; then
-        log_error "Base config not found: $base_file"
-        return 1
-    fi
+	if [ ! -f "$base_file" ]; then
+		log_error "Base config not found: $base_file"
+		return 1
+	fi
 
-    # If no OS override, just copy base
-    if [ ! -f "$os_file" ]; then
-        cp "$base_file" "$output_file"
-        log_success "Installed base config to $output_file"
-        return 0
-    fi
+	# If no OS override, just copy base
+	if [ ! -f "$os_file" ]; then
+		cp "$base_file" "$output_file"
+		log_success "Installed base config to $output_file"
+		return 0
+	fi
 
-    # Determine file type and merge accordingly
-    ext="${base_file##*.}"
+	# Determine file type and merge accordingly
+	ext="${base_file##*.}"
 
-    case "$ext" in
-        sh|bash|zsh|fish)
-            # Shell scripts: source base then OS override
-            {
-                printf "# Auto-generated by greg-config installer\n"
-                printf "# DO NOT EDIT directly - edit source in ~/.local/share/greg-config\n"
-                printf "\n"
-                printf "# Base configuration\n"
-                printf ". '%s'\n" "$base_file"
-                printf "\n"
-                printf "# OS-specific overrides\n"
-                printf ". '%s'\n" "$os_file"
-            } > "$output_file"
-            ;;
-        lua)
-            # Lua: load base then OS override (Neovim style)
-            {
-                printf "-- Auto-generated by greg-config installer\n"
-                printf "-- DO NOT edit directly\n"
-                printf "\n"
-                printf "-- Load base configuration\n"
-                printf "dofile('%s')\n" "$base_file"
-                printf "\n"
-                printf "-- Load OS-specific overrides\n"
-                printf "dofile('%s')\n" "$os_file"
-            } > "$output_file"
-            ;;
-        yaml|yml)
-            # YAML: concatenate (assumes sections are additive)
-            cat "$base_file" "$os_file" > "$output_file"
-            ;;
-        toml)
-            # TOML: concatenate (simple merge, assumes no duplicate keys)
-            cat "$base_file" "$os_file" > "$output_file"
-            ;;
-        *)
-            # Default: concatenate
-            cat "$base_file" "$os_file" > "$output_file"
-            ;;
-    esac
+	case "$ext" in
+	sh | bash | zsh | fish)
+		# Shell scripts: source base then OS override
+		{
+			printf "# Auto-generated by greg-config installer\n"
+			printf "# DO NOT EDIT directly - edit source in ~/.local/share/greg-config\n"
+			printf "\n"
+			printf "# Base configuration\n"
+			printf ". '%s'\n" "$base_file"
+			printf "\n"
+			printf "# OS-specific overrides\n"
+			printf ". '%s'\n" "$os_file"
+		} >"$output_file"
+		;;
+	lua)
+		# Lua: load base then OS override (Neovim style)
+		{
+			printf '%s\n' "-- Auto-generated by greg-config installer"
+			printf '%s\n' "-- DO NOT edit directly"
+			printf "\n"
+			printf '%s\n' "-- Load base configuration"
+			printf "dofile('%s')\n" "$base_file"
+			printf "\n"
+			printf '%s\n' "-- Load OS-specific overrides"
+			printf "dofile('%s')\n" "$os_file"
+		} >"$output_file"
+		;;
+	yaml | yml)
+		# YAML: concatenate (assumes sections are additive)
+		cat "$base_file" "$os_file" >"$output_file"
+		;;
+	toml)
+		# TOML: concatenate (simple merge, assumes no duplicate keys)
+		cat "$base_file" "$os_file" >"$output_file"
+		;;
+	*)
+		# Default: concatenate
+		cat "$base_file" "$os_file" >"$output_file"
+		;;
+	esac
 
-    log_success "Merged config to $output_file"
+	log_success "Merged config to $output_file"
 }
 
 # Ensure directory exists
 ensure_dir() {
-    dir="$1"
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
-        log_success "Created directory: $dir"
-    fi
+	dir="$1"
+	if [ ! -d "$dir" ]; then
+		mkdir -p "$dir"
+		log_success "Created directory: $dir"
+	fi
 }
 
 # Confirm with user
 confirm() {
-    prompt="$1"
-    response=""
+	prompt="$1"
+	response=""
 
-    while true; do
-        # POSIX read -r is standard, -p might not be supported everywhere
-        printf "%s [y/N] " "$prompt"
-        read -r response
-        case "$response" in
-            [Yy]|[Yy][Ee][Ss])
-                return 0
-                ;;
-            [Nn]|[Nn][Oo]|"")
-                return 1
-                ;;
-            *)
-                printf "Please answer yes or no\n"
-                ;;
-        esac
-    done
+	while true; do
+		# POSIX read -r is standard, -p might not be supported everywhere
+		printf "%s [y/N] " "$prompt"
+		read -r response
+		case "$response" in
+		[Yy] | [Yy][Ee][Ss])
+			return 0
+			;;
+		[Nn] | [Nn][Oo] | "")
+			return 1
+			;;
+		*)
+			printf "Please answer yes or no\n"
+			;;
+		esac
+	done
 }
 
 # Detect shell (for shell-specific installations)
 detect_shell() {
-    # Check environment variables set by shells
-    if [ -n "${ZSH_VERSION:-}" ]; then
-        printf "zsh"
-    elif [ -n "${FISH_VERSION:-}" ]; then
-        printf "fish"
-    elif [ -n "${BASH_VERSION:-}" ]; then
-        printf "bash"
-    elif [ -n "${NU_VERSION:-}" ]; then
-        printf "nushell"
-    else
-        # Fallback: check current shell
-        current_shell=$(readlink -f /proc/$$/exe 2>/dev/null || ps -p $$ -ocomm=)
-        case "$current_shell" in
-            *zsh)
-                printf "zsh"
-                ;;
-            *fish)
-                printf "fish"
-                ;;
-            *bash)
-                printf "bash"
-                ;;
-            *nu)
-                printf "nushell"
-                ;;
-            *)
-                printf "unknown"
-                ;;
-        esac
-    fi
+	# Check environment variables set by shells
+	if [ -n "${ZSH_VERSION:-}" ]; then
+		printf "zsh"
+	elif [ -n "${FISH_VERSION:-}" ]; then
+		printf "fish"
+	elif [ -n "${BASH_VERSION:-}" ]; then
+		printf "bash"
+	elif [ -n "${NU_VERSION:-}" ]; then
+		printf "nushell"
+	else
+		# Fallback: check current shell
+		current_shell=$(readlink -f /proc/$$/exe 2>/dev/null || ps -p $$ -ocomm=)
+		case "$current_shell" in
+		*zsh)
+			printf "zsh"
+			;;
+		*fish)
+			printf "fish"
+			;;
+		*bash)
+			printf "bash"
+			;;
+		*nu)
+			printf "nushell"
+			;;
+		*)
+			printf "unknown"
+			;;
+		esac
+	fi
 }
 
 # Get config directory (XDG compliant)
 get_config_dir() {
-    tool="$1"
-    printf "%s" "${XDG_CONFIG_HOME:-$HOME/.config}/$tool"
+	tool="$1"
+	printf "%s" "${XDG_CONFIG_HOME:-$HOME/.config}/$tool"
 }
 
 # Get data directory (XDG compliant)
 get_data_dir() {
-    tool="$1"
-    printf "%s" "${XDG_DATA_HOME:-$HOME/.local/share}/$tool"
+	tool="$1"
+	printf "%s" "${XDG_DATA_HOME:-$HOME/.local/share}/$tool"
 }

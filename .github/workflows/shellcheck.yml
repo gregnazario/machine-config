@@ -15,10 +15,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install ShellCheck
+      - name: Install ShellCheck and shfmt
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
+
+          # Install shfmt from GitHub releases
+          curl -sSLo /tmp/shfmt "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_linux_amd64"
+          chmod +x /tmp/shfmt
+          sudo mv /tmp/shfmt /usr/bin/shfmt
+
+      - name: Display tool versions
+        run: |
+          echo "ShellCheck version:"
+          shellcheck --version
+          echo "shfmt version:"
+          shfmt --version
+
+      - name: Check for shell scripts
+        run: |
+          echo "All shell scripts found:"
+          find . -type f -name "*.sh" -type f
+
+      - name: Run shfmt to check formatting
+        run: |
+          # Check if all shell scripts are formatted
+          # -d: print diffs
+          # -w: write back to file (we use -d to check in CI)
+          shfmt -d .
 
       - name: Run ShellCheck on all shell scripts
         run: |
@@ -27,14 +51,6 @@ jobs:
 
           # Exit with error if shellcheck found issues
           exit $?
-
-      - name: Display ShellCheck version
-        run: shellcheck --version
-
-      - name: Check for shell scripts
-        run: |
-          echo "All shell scripts found:"
-          find . -type f -name "*.sh" -type f
 
   # Optional job: Check if scripts are executable
   permissions:
