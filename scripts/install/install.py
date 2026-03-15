@@ -15,8 +15,14 @@ from typing import List, Dict, Set, Optional
 try:
 	import curses
 	HAS_CURSES = True
+
+	# Detect terminal type
+	TERM = os.environ.get('TERM', 'xterm-256color')
+	IS_GHOSTTY = 'ghostty' in TERM.lower()
 except ImportError:
 	HAS_CURSES = False
+	IS_GHOSTTY = False
+	TERM = 'unknown'
 
 # Parse command-line arguments
 def parse_args():
@@ -667,6 +673,8 @@ def get_tools_from_cli(tools_str: str, categories_str: str) -> Set[str]:
     return selected_tools
 
 # TUI Installer (only available if curses is available)
+# Tested terminals: ghostty, alacritty, wezterm, iterm2, kitty, gnome-terminal, konsole
+# Should work with any xterm-compatible terminal
 if HAS_CURSES:
 	class TUIInstaller:
 		def __init__(self, stdscr):
@@ -688,18 +696,32 @@ if HAS_CURSES:
 			# Set up curses
 			curses.curs_set(0)  # Hide cursor
 			curses.noecho()
+			curses.raw()  # Raw mode for better input handling
 			self.stdscr.keypad(1)
-			curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
+
+			# Try to enable mouse (may fail in some terminals)
+			try:
+				curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
+				self.mouse_enabled = True
+			except:
+				self.mouse_enabled = False
+
+			# Check if we can use Unicode cursor characters
+			self.use_unicode_cursor = self._check_unicode_support()
 
 			# Initialize colors
-			curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
-			curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-			curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-			curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
-			curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-			curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE)
-			curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_CYAN)
-			curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_WHITE)
+			try:
+				curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+				curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+				curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+				curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+				curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+				curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE)
+				curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_CYAN)
+				curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_WHITE)
+			except curses.error:
+				# Fallback for terminals with limited colors
+				pass
 
 			self.CYAN = curses.color_pair(1) | curses.A_BOLD
 			self.GREEN = curses.color_pair(2) | curses.A_BOLD
@@ -709,7 +731,33 @@ if HAS_CURSES:
 			self.SELECTED = curses.color_pair(6)
 			self.SELECTED_CYAN = curses.color_pair(7)
 			self.HIGHLIGHT = curses.color_pair(8)
-			self.HIGHLIGHT_BOLD = curses.color_pair(8) | curses.A_BOLD | curses.A_UNDERLINE
+			self.HIGHLIGHT_BOLD = curses.color_pair(8) | curses.A_BOLD | curses.A_REVERSE
+
+		def _check_unicode_support(self):
+			"""Check if terminal supports Unicode cursor characters"""
+			try:
+				# Try to draw a test character
+				self.stdscr.addstr(0, 0, "►")
+				self.stdscr.refresh()
+				self.stdscr.delch(0)
+				return True
+			except:
+				# Fallback to ASCII
+				return False
+
+		def _get_cursor_char(self):
+			"""Get cursor character based on terminal support"""
+			if self.use_unicode_cursor:
+				return "►"
+			else:
+				return ">"
+
+		def _get_checkbox(self, checked):
+			"""Get checkbox characters based on terminal support"""
+			if self.use_unicode_cursor:
+				return "[✓]" if checked else "[ ]"
+			else:
+				return "[*]" if checked else "[ ]"
 
 		def clear_screen(self):
 			"""Clear the screen"""
@@ -755,8 +803,9 @@ if HAS_CURSES:
 		def draw_list_item(self, y: int, x: int, text: str, is_cursor: bool = False):
 			"""Draw a list item with optional cursor highlight"""
 			if is_cursor:
+				cursor = self._get_cursor_char()
 				try:
-					self.stdscr.addstr(y, x, f"► {text}", self.HIGHLIGHT_BOLD)
+					self.stdscr.addstr(y, x, f"{cursor} {text}", self.HIGHLIGHT_BOLD)
 				except curses.error:
 					pass
 			else:
@@ -768,15 +817,15 @@ if HAS_CURSES:
 		def draw_checkbox(self, y: int, x: int, text: str, checked: bool, is_cursor: bool = False):
 			"""Draw a checkbox item"""
 			if is_cursor:
+				cursor = self._get_cursor_char()
 				color = self.HIGHLIGHT_BOLD
-				prefix = "► "
 			else:
+				cursor = "  "
 				color = self.CYAN
-				prefix = "  "
 
-			box = "[✓]" if checked else "[ ]"
+			box = self._get_checkbox(checked)
 			try:
-				self.stdscr.addstr(y, x, f"{prefix}{box} {text}", color)
+				self.stdscr.addstr(y, x, f"{cursor}{box} {text}", color)
 			except curses.error:
 				pass
 
@@ -859,7 +908,7 @@ if HAS_CURSES:
 				# Draw highlighted or normal
 				if idx == self.cursor_pos:
 					try:
-						self.stdscr.addstr(button_y, 8, f"► {name}", self.HIGHLIGHT_BOLD)
+						self.stdscr.addstr(button_y, 8, f"{self._get_cursor_char()} {name}", self.HIGHLIGHT_BOLD)
 						self.stdscr.addstr(button_y + 1, 10, desc, self.GREEN)
 					except curses.error:
 						pass
@@ -922,7 +971,7 @@ if HAS_CURSES:
 				# Draw with cursor highlight
 				if idx == self.cursor_pos:
 					try:
-						self.stdscr.addstr(cat_y, 6, f"► {desc}", self.HIGHLIGHT_BOLD)
+						self.stdscr.addstr(cat_y, 6, f"{self._get_cursor_char()} {desc}", self.HIGHLIGHT_BOLD)
 						self.stdscr.addstr(cat_y, 40, status, color | curses.A_BOLD)
 					except curses.error:
 						pass
