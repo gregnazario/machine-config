@@ -29,6 +29,7 @@ while [ $# -gt 0 ]; do
 		printf "  --categories <cat1,cat2>   Comma-separated list of categories to install\n"
 		printf "  --yes, -y                 Auto-accept all prompts\n"
 		printf "  --dry-run                 Show what would be installed without installing\n"
+		printf "  --tui                     Use terminal UI with mouse support\n"
 		printf "  --skip-python-check       Skip Python version check\n"
 		printf "  --no-python-install       Don't install Python automatically\n"
 		printf "\n"
@@ -51,6 +52,10 @@ while [ $# -gt 0 ]; do
 		;;
 	--no-python-install)
 		AUTO_INSTALL_PYTHON="--no-python-install"
+		shift
+		;;
+	--tui)
+		USE_TUI="--tui"
 		shift
 		;;
 	*)
@@ -263,5 +268,12 @@ fi
 
 # Run the Python installer
 printf "%b✓ Python %s detected%b\n" "$GREEN" "$PYTHON_VERSION" "$NC"
-printf "%bStarting interactive installer...%b\n\n" "$GREEN" "$NC"
-exec "$PYTHON_CMD" "$SCRIPT_DIR/install/install.py" "$@"
+
+# Check if TUI mode is requested
+if [ "$USE_TUI" = "--tui" ]; then
+	printf "%bStarting TUI installer...%b\n\n" "$GREEN" "$NC"
+	exec "$PYTHON_CMD" "$SCRIPT_DIR/install/install_tui.py" "$@"
+else
+	printf "%bStarting interactive installer...%b\n\n" "$GREEN" "$NC"
+	exec "$PYTHON_CMD" "$SCRIPT_DIR/install/install.py" "$@"
+fi

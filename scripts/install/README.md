@@ -21,8 +21,11 @@ The installer uses a **bootstrap pattern**:
 ### Quick Start
 
 ```bash
-# From the repository root
+# From the repository root (default CLI installer)
 ./scripts/install.sh
+
+# Use TUI with mouse support
+./scripts/install.sh --tui
 ```
 
 The installer will automatically install Python 3 if it's missing.
@@ -68,13 +71,39 @@ The installer includes predefined profiles for common use cases:
    - Toggle tools on/off
    - Maximum control
 
+### Installation Modes
+
+#### Interactive CLI (Default)
+
+Traditional command-line interface with numbered menus:
+```bash
+./scripts/install.sh
+```
+
+#### TUI with Mouse Support
+
+Modern terminal UI with clickable buttons:
+```bash
+./scripts/install.sh --tui
+```
+
+Features:
+- **Mouse support** - Click buttons instead of typing numbers
+- **Visual feedback** - Color-coded selection status
+- **Responsive** - Doesn't shift terminal content
+- **Intuitive** - Navigate with mouse or keyboard
+- **Fast** - Toggle tools with single click
+
+#### Automated (Non-Interactive)
+
+For LLMs and CI/CD:
+```bash
+./scripts/install.sh --profile developer --yes
+./scripts/install.sh --tools zsh,neovim,git --yes
+./scripts/install.sh --categories shells,editors --yes
+```
+
 ### Installation Flow
-
-1. **Python Check** (Automatic)
-   - Installs Python 3 if missing
-   - Upgrades if version too old
-
-2. **Profile Selection**
    - Choose from predefined profiles
    - Or select custom for manual selection
 
