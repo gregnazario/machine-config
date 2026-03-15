@@ -1,0 +1,180 @@
+# LazyDocker Configuration
+# Terminal UI for Docker and Docker-Compose
+
+# === General Settings ===
+
+# UI settings
+gui:
+  # Theme
+  # Options: default, dracula, catppuccin, etc.
+  theme:
+    activeBorderColor:
+      - green
+      - bold
+    inactiveBorderColor:
+      - white
+    optionsTextColor:
+      - blue
+    selectedLineBgColor:
+      - blue
+      - bold
+    selectedRangeBgColor:
+      - blue
+    optionsInfoBorderColor:
+      - green
+  # Show commits (for images)
+  showAllContainers: true
+  # Container labels to show
+  containerLabels: []
+  # Service labels to show
+  serviceLabels: []
+  # Show logs automatically
+  showContainerStatus: true
+  # Container show environment variables
+  showContainerEnvVars: false
+  # Container stats format
+  # Options: default, compact
+  statsFormat: default
+
+# === Command Templates ===
+
+# Docker commands
+commands:
+  docker:
+    # Docker binary
+    bin: docker
+  dockerCompose:
+    # Docker Compose binary
+    bin: docker compose
+    # For older versions:
+    # bin: docker-compose
+
+# === OS Settings ===
+
+# OS-specific settings
+os:
+  # Linux
+  openCommand: xdg-open {{path}}
+  # macOS
+  # openCommand: open {{path}}
+  # Windows
+  # openCommand: start {{path}}
+
+# === Update Settings ===
+
+# Check for updates
+update:
+  # Check for updates on startup
+  dockerPullInterval: 100
+
+# === Logging ===
+
+# Logging settings
+logging:
+  # Enable file logging
+  fileLogging: false
+  # Log file location
+  # path: ~/.local/share/lazydocker/lazydocker.log
+
+# === Custom Commands ===
+
+# Define custom commands for containers, services, images
+customCommand:
+  # Container commands
+  container:
+    - name: bash
+      attach: true
+      command: docker exec -it {{.Container.ID}} /bin/bash
+      serviceName: bash
+    - name: sh
+      attach: true
+      command: docker exec -it {{.Container.ID}} /bin/sh
+      serviceName: sh
+    - name: zsh
+      attach: true
+      command: docker exec -it {{.Container.ID}} /bin/zsh
+      serviceName: zsh
+    - name: fish
+      attach: true
+      command: docker exec -it {{.Container.ID}} /bin/fish
+      serviceName: fish
+
+# === Keybindings ===
+
+# Custom keybindings (global)
+keybindings:
+  containers:
+    - key: e
+      context: containers
+      description: Edit container config
+      command: >
+        if [ -n "{{.Container.Dir}}" ]; then
+          {{.Editor}} {{.Container.Dir}}/Dockerfile
+        else
+          echo "No directory found for container"
+        fi
+    - key: b
+      context: containers
+      description: Open shell in container
+      command: >
+        docker exec -it {{.Container.ID}} /bin/bash || \
+        docker exec -it {{.Container.ID}} /bin/sh
+  services:
+    - key: l
+      context: services
+      description: View service logs
+      command: >
+        docker compose -f {{.Service.Paths.Config}} logs --follow --tail=100 {{.Service.Name}}
+  images:
+    - key: i
+      context: images
+      description: Inspect image
+      command: docker image inspect {{.Image.ID}}
+
+# === Display Settings ===
+
+# What to show/hide
+disableStartupBanner: false
+
+# === Screens ===
+
+# Main screen layout
+screens:
+  main:
+    # Show/hide sections
+    # Options: services, containers, images, volumes
+    show: [services, containers, images, volumes]
+
+# === Filters ===
+
+# Container filters
+containerFilter:
+  # Show all containers (including stopped)
+  all: true
+
+# === Fonts ===
+
+# Font settings
+fonts:
+  # Use emoji icons
+  useIcons: true
+  # Use nerd fonts
+  useNerdFonts: true
+
+# === Templates ===
+
+# Template options
+templates:
+  # Dockerfile template
+  dockerfile: |
+    FROM {{baseImage}}
+    {{content}}
+
+  # docker-compose.yml template
+  dockerCompose: |
+    version: '3'
+    services:
+      {{serviceName}}:
+        image: {{image}}
+        ports:
+          - "{{port}}:{{port}}"

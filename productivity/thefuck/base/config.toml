@@ -1,0 +1,77 @@
+# The Fuck Configuration
+# Configuration file for thefuck command correction tool
+
+# === Rules ===
+
+# Enable/disable specific rules
+# Uncomment to disable specific rules
+# rules = ["sudo_command", "no_command", "git_push", ...]
+
+# Exclude rules (these will never be used)
+exclude_rules = [
+  "git_fix_stash",
+  "svn_merge",
+  "hg_fix_merge",
+  "brew_install",
+]
+
+# Require confirmation (default: true)
+require_confirmation = true
+
+# Wait for command to finish (default: true)
+wait_command = 10
+
+# === Output ===
+
+# Enable debug output
+debug = false
+
+# Show error messages
+show_traceback = false
+
+# Priority (lower is higher priority)
+priority = {
+  # Git commands have higher priority
+  "^git" = 100,
+  #npm commands
+  "^npm" = 50,
+  # apt/apt-get commands
+  "^apt" = 75,
+}
+
+# === User Agent ===
+
+# User agent for API calls
+# user_agent = "thefuck/1.0"
+
+# === Command Aliases ===
+
+# Define custom command aliases
+[command_aliases]
+# Example:
+# k = "kubectl"
+# dc = "docker-compose"
+
+# === Environment Variables ===
+
+# Set environment variables for corrected commands
+[env]
+# Example:
+# EDITOR = "vim"
+
+# === History ===
+
+# Number of commands to remember in history
+history_limit = 1000
+
+# Alter history (default: true)
+# If true, replaces the old command with the corrected one in shell history
+alter_history = true
+
+# === Wait ===
+
+# Wait time before running corrected command (seconds)
+wait_command = 3
+
+# No wait for certain commands
+# no_wait = ["git", "npm"]

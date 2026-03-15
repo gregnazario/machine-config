@@ -1,0 +1,137 @@
+# mycli Configuration
+# MySQL CLI with autocomplete and syntax highlighting
+
+# === Connection Settings ===
+
+# Default host (if not specified)
+# host = localhost
+
+# Default port
+# port = 3306
+
+# Default user
+# user = root
+
+# Default database
+# database = mysql
+
+# === Appearance ===
+
+# Enable syntax highlighting
+syntax_highlight = True
+
+# Show less verbose output (less table borders)
+less_verbose = True
+
+# Enable auto-vertical output
+# If result is wider than terminal, switch to vertical
+auto_vertical_output = True
+
+# Enable table format
+table_format = ascii
+
+# Character for null values
+null_string = '<null>'
+
+# Pager behavior
+# Options: always, long, no
+pager = long
+
+# === Behavior ===
+
+# Enable completion
+completer_raise_error = False
+
+# Enable multiline mode
+multiline = True
+
+# Multiline continuation prompt
+prompt_continuation = '... '
+
+# Timing of queries
+timing_enabled = True
+
+# === Formatting ===
+
+# Number of rows for vertical output
+vertical_output_limit = 40
+
+# Character set
+# encoding = utf8
+
+# Border style for tables
+# Options: ascii, double, heavy, light, minimal, none
+border = ascii
+
+# === Keybindings ===
+
+# Keybinding style
+# Options: emacs, vi
+key_bindings = emacs
+
+# === History ===
+
+# History file location
+# history_file = ~/.mycli/history
+
+# Number of commands to save in history
+# history_limit = 1000
+
+# === Alerts ===
+
+# Enable alerts
+# Warns about potentially dangerous operations
+alerts = True
+
+# Warn when running without WHERE clause
+warn_on_where_clause = True
+
+# === Destructive Operations ===
+
+# Confirm on destructive operations
+# DROP, TRUNCATE, etc.
+destructive_warning = True
+
+# === Login Path ===
+
+# Use MySQL login path (secure authentication)
+# login_path = client
+
+# === SSL ===
+
+# SSL mode
+# ssl = True
+
+# === Output ===
+
+# Output format
+# Options: table, csv, json, vertical
+# \T format
+
+# === Editor ===
+
+# Editor for \e command
+# editor = vim
+
+# === Auto-commpletion ===
+
+# Complete mode words
+# smart_completion = True
+
+# Complete keywords
+# keyword_completion = True
+
+# === Display ===
+
+# Show line numbers
+# linenums = False
+
+# === Safe Mode ===
+
+# Log queries to file
+# log_file = /tmp/mycli.log
+
+# === Templates ===
+
+# Query templates
+# \t <template_name> <query>

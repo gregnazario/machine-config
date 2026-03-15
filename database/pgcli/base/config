@@ -1,0 +1,150 @@
+# pgcli Configuration
+# PostgreSQL CLI with autocomplete and syntax highlighting
+
+# === Connection Settings ===
+
+# Default host (if not specified)
+# host = localhost
+
+# Default port
+# port = 5432
+
+# Default user
+# user = postgres
+
+# Default database
+# database = postgres
+
+# === Appearance ===
+
+# Enable syntax highlighting
+syntax_highlight = True
+
+# Show less verbose output (less table borders)
+less_verbose = True
+
+# Enable auto-vertical output
+# If result is wider than terminal, switch to vertical
+auto_vertical_output = True
+
+# Enable table format
+table_format = ascii
+
+# Character for null values
+null_string = '<null>'
+
+# Pager behavior
+# Options: always, long, no
+pager = long
+
+# === Behavior ===
+
+# Enable completion
+completer_raise_error = False
+
+# Enable multiline mode
+multiline = True
+
+# Multiline continuation prompt
+prompt_continuation = '... '
+
+# Timing of queries
+timing_enabled = True
+
+# Show top-level tables only
+# If False, also show tables in schemas
+top_level_tables_only = False
+
+# Expand SQL before executing
+# Shows expanded SQL
+expand = False
+
+# === Formatting ===
+
+# Number of rows for vertical output
+vertical_output_limit = 40
+
+# Character set
+# encoding = utf8
+
+# Border style for tables
+# Options: ascii, double, heavy, light, minimal, none
+border = ascii
+
+# === Keybindings ===
+
+# Keybinding style
+# Options: emacs, vi
+key_bindings = emacs
+
+# === History ===
+
+# History file location
+# history_file = ~/.pgcli/history
+
+# Number of commands to save in history
+# history_limit = 1000
+
+# === Alerts ===
+
+# Enable alerts
+# Warns about potentially dangerous operations
+alerts = True
+
+# Warn when running without WHERE clause
+warn_on_where_clause = True
+
+# === Destructive Operations ===
+
+# Confirm on destructive operations
+# DROP, TRUNCATE, etc.
+destructive_warning = True
+
+# === Special Commands ===
+
+# Favorite queries
+# %fav save myquery
+# %fav list
+# %fav myquery
+
+# === Password ===
+
+# Ask for password if not provided
+# password = False
+
+# === SSL ===
+
+# SSL mode
+# sslmode = prefer
+
+# === Output ===
+
+# Output format
+# Options: table, csv, json, vertical
+# \T format
+
+# === Editor ===
+
+# Editor for \e command
+# editor = vim
+
+# === Auto-commpletion ===
+
+# Complete mode words
+# smart_completion = True
+
+# Complete keywords
+# keyword_completion = True
+
+# Complete names with schema
+# complete_with_schema = True
+
+# === Display ===
+
+# Show line numbers
+# linenums = False
+
+# === Templates ===
+
+# Query templates
+# \t <template_name> <query>
