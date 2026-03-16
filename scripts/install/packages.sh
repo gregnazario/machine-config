@@ -226,5 +226,5 @@ get_package_name() {
 	return 1
 }
 
-# Export function for use in other scripts
-export -f get_package_name
+# Function is available when this file is sourced (POSIX compliant)
+# Note: export -f is a bashism not supported by all shells (e.g., Alpine's ash)
