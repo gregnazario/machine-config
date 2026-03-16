@@ -352,6 +352,73 @@ def is_raspberry_pi() -> bool:
             return 'Raspberry Pi' in content or 'BCM' in content
     return False
 
+def detect_environment() -> dict:
+    """Detect runtime environment (containers, WSL, etc.)."""
+    env_info = {
+        'is_wsl': False,
+        'wsl_version': 0,
+        'is_container': False,
+        'container_type': None,
+        'is_root': os.geteuid() == 0,
+        'has_sudo': False,
+    }
+
+    # Check for WSL
+    if Path('/proc/version').exists():
+        try:
+            with open('/proc/version') as f:
+                version_content = f.read().lower()
+                if 'microsoft' in version_content:
+                    env_info['is_wsl'] = True
+                    if 'wsl2' in version_content:
+                        env_info['wsl_version'] = 2
+                    else:
+                        env_info['wsl_version'] = 1
+        except:
+            pass
+
+    # Check for containers
+    # Docker
+    if Path('/.dockerenv').exists():
+        env_info['is_container'] = True
+        env_info['container_type'] = 'docker'
+    elif Path('/proc/1/cgroup').exists():
+        try:
+            with open('/proc/1/cgroup') as f:
+                cgroup_content = f.read()
+                if 'docker' in cgroup_content or 'containerd' in cgroup_content:
+                    env_info['is_container'] = True
+                    env_info['container_type'] = 'docker'
+                elif 'lxc' in cgroup_content or 'lxd' in cgroup_content:
+                    env_info['is_container'] = True
+                    env_info['container_type'] = 'lxc'
+                elif 'kubepods' in cgroup_content:
+                    env_info['is_container'] = True
+                    env_info['container_type'] = 'kubernetes'
+        except:
+            pass
+
+    # Check for Podman
+    if Path('/run/.containerenv').exists():
+        env_info['is_container'] = True
+        env_info['container_type'] = 'podman'
+
+    # Check for OrbStack
+    if Path('/OrbStack').exists() or Path('/proc/orbstack').exists():
+        env_info['is_container'] = True
+        if not env_info['container_type']:
+            env_info['container_type'] = 'orbstack'
+
+    # Check for sudo availability
+    try:
+        import subprocess
+        result = subprocess.run(['which', 'sudo'], capture_output=True, text=True)
+        env_info['has_sudo'] = result.returncode == 0
+    except:
+        pass
+
+    return env_info
+
 def clear_screen():
     """Clear the terminal screen."""
     os.system('clear' if os.name != 'nt' else 'cls')
@@ -369,11 +436,27 @@ def print_header():
 
 def print_system_info(current_os: str):
     """Print system information."""
+    env = detect_environment()
+
     print(f"{Colors.BLUE}System Information:{Colors.NC}")
     print(f"  OS:        {Colors.GREEN}{current_os.capitalize()}{Colors.NC}")
     print(f"  Hostname:  {Colors.GREEN}{os.uname().nodename}{Colors.NC}")
     print(f"  User:      {Colors.GREEN}{os.getenv('USER', 'unknown')}{Colors.NC}")
     print(f"  Version:   {Colors.GREEN}{get_version()}{Colors.NC}")
+
+    # Show environment info if special
+    if env['is_wsl']:
+        print(f"  {Colors.CYAN}→ Running in WSL {env['wsl_version']}{Colors.NC}")
+
+    if env['is_container']:
+        container = env['container_type'] or 'container'
+        print(f"  {Colors.CYAN}→ Running in {container.capitalize()}{Colors.NC}")
+
+    if env['is_root']:
+        print(f"  {Colors.YELLOW}→ Running as root{Colors.NC}")
+    elif not env['has_sudo']:
+        print(f"  {Colors.YELLOW}→ Sudo not available (will install without it){Colors.NC}")
+
     print()
 
 def welcome(current_os: str):
@@ -916,10 +999,27 @@ if HAS_CURSES:
 			line = self.draw_header("Greg's Dotfiles Installer - TUI Mode")
 			line += 2
 
+			# Build welcome text with environment info
 			welcome_text = [
 				f"Detected OS: {self.current_os.capitalize()}",
 				f"Terminal: {TERM_FRIENDLY}",
 				f"Version: {get_version()}",
+			]
+
+			# Add environment info if special
+			env = detect_environment()
+			if env['is_wsl']:
+				welcome_text.append(f"Environment: WSL {env['wsl_version']}")
+			elif env['is_container']:
+				container = env['container_type'] or 'container'
+				welcome_text.append(f"Environment: {container.capitalize()}")
+
+			if env['is_root']:
+				welcome_text.append("Running as: root")
+			elif not env['has_sudo']:
+				welcome_text.append("Sudo: not available")
+
+			welcome_text.extend([
 				"",
 				"Welcome to the interactive dotfiles installer!",
 				"",
@@ -931,7 +1031,7 @@ if HAS_CURSES:
 				"",
 				"Click 'Start' or press Enter to continue",
 				"Press 'q' to quit at any time",
-			]
+			])
 
 			for text in welcome_text:
 				try:

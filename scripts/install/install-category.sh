@@ -15,8 +15,23 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Source package database
+# Source environment detection
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "${SCRIPT_DIR}/../utils/detect-env.sh" ]; then
+	ENV_DETECTED="$("${SCRIPT_DIR}/../utils/detect-env.sh")"
+	eval "$ENV_DETECTED"
+fi
+
+# Determine if we need sudo
+if [ "${CAN_SUDO:-false}" = "true" ]; then
+	SUDO="sudo"
+elif [ "${IS_ROOT:-false}" = "true" ]; then
+	SUDO=""
+else
+	SUDO="sudo"
+fi
+
+# Source package database
 if [ -f "${SCRIPT_DIR}/packages.sh" ]; then
 	. "${SCRIPT_DIR}/packages.sh"
 fi
@@ -70,69 +85,69 @@ install_packages() {
 		;;
 	fedora|oracle|rocky|almalinux)
 		if command -v dnf >/dev/null 2>&1; then
-			sudo dnf install -y $packages 2>/dev/null || true
+			$SUDO dnf install -y $packages 2>/dev/null || true
 		fi
 		;;
 	amazon)
 		if command -v yum >/dev/null 2>&1; then
-			sudo yum install -y $packages 2>/dev/null || true
+			$SUDO yum install -y $packages 2>/dev/null || true
 		elif command -v dnf >/dev/null 2>&1; then
-			sudo dnf install -y $packages 2>/dev/null || true
+			$SUDO dnf install -y $packages 2>/dev/null || true
 		fi
 		;;
 	ubuntu|debian|rpi|mint)
 		if command -v apt >/dev/null 2>&1; then
-			sudo apt update -qq 2>/dev/null || true
-			sudo apt install -y $packages 2>/dev/null || true
+			$SUDO apt update -qq 2>/dev/null || true
+			DEBIAN_FRONTEND=noninteractive $SUDO apt install -y $packages 2>/dev/null || true
 		fi
 		;;
 	arch)
 		if command -v pacman >/dev/null 2>&1; then
-			sudo pacman -S --noconfirm --needed $packages 2>/dev/null || true
+			$SUDO pacman -S --noconfirm --needed $packages 2>/dev/null || true
 		fi
 		;;
 	opensuse)
 		if command -v zypper >/dev/null 2>&1; then
-			sudo zypper install -y $packages 2>/dev/null || true
+			$SUDO zypper install -y $packages 2>/dev/null || true
 		fi
 		;;
 	solus)
 		if command -v eopkg >/dev/null 2>&1; then
-			sudo eopkg install -y $packages 2>/dev/null || true
+			$SUDO eopkg install -y $packages 2>/dev/null || true
 		else
 			printf "${YELLOW}    ⚠ eopkg not found, skipping packages${NC}\n"
 		fi
 		;;
 	gentoo)
 		if command -v emerge >/dev/null 2>&1; then
-			sudo emerge --quiet app-portage/portage $packages 2>/dev/null || true
+			$SUDO emerge --quiet app-portage/portage $packages 2>/dev/null || true
 		fi
 		;;
 	void)
 		if command -v xbps-install >/dev/null 2>&1; then
-			sudo xbps-install -Sy $packages 2>/dev/null || true
+			$SUDO xbps-install -Sy $packages 2>/dev/null || true
 		fi
 		;;
 	alpine)
 		if command -v apk >/dev/null 2>&1; then
-			sudo apk add --no-cache $packages 2>/dev/null || true
+			$SUDO apk add --no-cache $packages 2>/dev/null || true
 		fi
 		;;
 	freebsd)
 		if command -v pkg >/dev/null 2>&1; then
-			sudo pkg install -y $packages 2>/dev/null || true
+			$SUDO pkg install -y $packages 2>/dev/null || true
 		fi
 		;;
 	openbsd)
 		if command -v pkg_add >/dev/null 2>&1; then
-			sudo pkg_add -I $packages 2>/dev/null || true
+			$SUDO pkg_add -I $packages 2>/dev/null || true
 		else
 			printf "${YELLOW}    ⚠ pkg_add not found, skipping packages${NC}\n"
 		fi
 		;;
 	netbsd)
 		if command -v pkgin >/dev/null 2>&1; then
-			sudo pkgin -y install $packages 2>/dev/null || true
+			$SUDO pkgin -y install $packages 2>/dev/null || true
 		else
 			printf "${YELLOW}    ⚠ pkgin not found. Install with: pkg_add pkgin${NC}\n"
 		fi
